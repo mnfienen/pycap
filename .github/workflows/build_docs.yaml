@@ -1,0 +1,78 @@
+# edited from aleaf modflow-setup build_docs configuration file
+name: Publish Docs
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [ created ]
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Publish Docs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+    - name: Fetch all Git tags
+      run: git fetch --prune --unshallow --tags
+
+    - name: Cache Miniconda
+      uses: actions/cache@v4
+      env:
+        # Increase this value to reset cache if environment.yml has changed
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{
+            matrix.run-type }}-${{ env.CACHE_NUMBER }}-${{
+            hashFiles('ci/test_environment.yaml') }}
+
+    - name: Setup conda environment
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        activate-environment: hicap_ci
+        environment-file: ci/test_environment.yaml
+        python-version: ${{ matrix.python-version }}
+        #condarc-file: ci/example-condarc.yml
+        auto-activate-base: false
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+
+    - name: Conda info
+      shell: bash -l {0}
+      run: conda info
+
+
+    - name: Conda list
+      shell: bash -l {0}
+      run: conda list
+
+    - name: Build docs
+      shell: bash -l {0}
+      run: make html
+
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4.7.3
+      if: ${{ github.event_name == 'release' }}
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: build/html
+        CLEAN: false
+        TARGET_FOLDER: ${{ github.ref }}
+
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4.7.3
+      if: ${{ github.event_name == 'push' }}
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: build/html
+        CLEAN: false
+        TARGET_FOLDER: latest
