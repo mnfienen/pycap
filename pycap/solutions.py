@@ -806,7 +806,7 @@ def WardLoughDepletion(T1, T2, S1, S2, width, Q, dist, streambed_thick, streambe
         DeltaQ += _StehfestCoeff(jj, NSteh1) * _if1_dQ(T1, S1, K, lambd, jj * np.log(2) / t, x, y)
     DeltaQ = 2 * np.pi * lambd * DeltaQ * np.log(2) / t
 
-    return DeltaQ*Q
+    return DeltaQ*Q/ 3600 / 24 # convert back to CFS from CFD
 
 def _if1_dQ(T1, S1, K, lambda_, p, x, y):
     '''Internal function for Ward and Lough (2011) solution'''

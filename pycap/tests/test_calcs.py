@@ -508,8 +508,8 @@ def test_ward_lough_depletion(ward_lough_test_data):
     aquitard_K=0.001
     dQ1_test['mod'] = pycap.WardLoughDepletion(T1,T2,S1,S2,width,Q,dist,streambed_thick,
                             streambed_K,aquitard_thick,aquitard_K,dQ1_test.index*100, x, y)
-    assert np.allclose(dQ1_test['mod']/Q,dQ1_test['dQ'], atol=.1)
-    assert np.allclose(dQ2_test['mod']/Q,dQ2_test['dQ'], atol=.1)
+    assert np.allclose(dQ1_test['mod']/Q,dQ1_test['dQ']/3600/24, atol=.1)
+    assert np.allclose(dQ2_test['mod']/Q,dQ2_test['dQ']/3600/24, atol=.1)
     
 
 def test_ward_lough_drawdown(ward_lough_test_data):
