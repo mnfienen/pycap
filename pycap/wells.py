@@ -13,7 +13,7 @@ class WellResponse():
     Objects from this class will have the required information needed to
     call any of the analysis methods in the package.  The intent is that
     users will not have to access analytical solutions directly, but 
-    can set up a WellResponse object.  The generation of WellResonse
+    can set up a WellResponse object.  The generation of WellResponse
     objects is generally done through an AnalysisProject object.
 
     """
@@ -135,7 +135,7 @@ class WellResponse():
 
 class Well():
     """Object to evaluate a pending (or existing, or a couple other possibilities) well with all relevant impacts.
-        Preproceessing makes unit conversions and calculates distances as needed
+        Preprocessing makes unit conversions and calculates distances as needed
     """
 
     def __init__(self, well_status='pending', T=-9999, S=-99999, Q=-99999, depletion_years=5, theis_dd_days=-9999, depl_pump_time=-9999,
