@@ -156,9 +156,9 @@ class Well():
             [description]. Defaults to -9999.
         depl_pump_time: int 
             [description]. Defaults to -9999.
-        stream_dist: type
+        stream_dist: float
             [description]. Defaults to None.
-        drawdown_dist: type
+        drawdown_dist: dloat
             [description]. Defaults to None.
         stream_apportionment: type
             [description]. Defaults to None.
@@ -177,7 +177,7 @@ class Well():
         self.drawdown_dist = drawdown_dist
         self.T = T
         self.S = S
-        self.depletion_years = depletion_years
+        self.depletion_years = int(depletion_years)
         self.theis_dd_days = int(theis_dd_days)
         self.depl_pump_time = depl_pump_time
         self.Q = Q
