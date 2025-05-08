@@ -178,7 +178,7 @@ class Well():
         self.T = T
         self.S = S
         self.depletion_years = depletion_years
-        self.theis_dd_days = theis_dd_days
+        self.theis_dd_days = int(theis_dd_days)
         self.depl_pump_time = depl_pump_time
         self.Q = Q
         self.stream_apportionment=stream_apportionment
