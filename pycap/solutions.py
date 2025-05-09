@@ -6,7 +6,7 @@ import scipy.integrate as integrate
 import scipy.special as sps
 from scipy.special import gammaln
 
-""" FIle of drawdown and stream depletion analytical solutions
+""" File of drawdown and stream depletion analytical solutions
     as part of the pycap suite.
 
 """
@@ -14,7 +14,8 @@ from scipy.special import gammaln
 
 # define drawdown methods here
 def theis(T, S, time, dist, Q, **kwargs):
-    """Function to calculate Theis drawdown. Units are not specified, but should be consistent
+    """Function to calculate Theis drawdown. Units are not specified, but
+        should be consistent length and time
 
          Calculates the Theis drawdown solution at specified times
          or distances from a pumping well.
