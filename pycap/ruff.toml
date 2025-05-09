@@ -9,6 +9,7 @@ select = [
     "F",    # Pyflakes
     "I001", # isort - unsorted-imports
 ]
+extend-select = ["E501"]
 ignore = [
     "E402", # module level import not at top of file
     "E501", # line too long TODO FIXME
@@ -21,7 +22,7 @@ ignore = [
     "F524", # `.format` missing argument(s) for placeholder(s)
     "F811", # Redefinition of unused variable
     "F821", # undefined name TODO FIXME
-    "F841", # local variable assigned but never used
+  #  "F841", # local variable assigned but never used
     "E731"  # Do not assign a `lambda` expression, use a `def`
 ]
 

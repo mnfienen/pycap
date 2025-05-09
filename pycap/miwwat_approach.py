@@ -1,6 +1,4 @@
-import os
 import sys
-from pathlib import Path
 
 import geopandas as gpd
 import numpy as np
@@ -12,8 +10,6 @@ from .geoprocessing import Geoprocess, WellGeometry
 sys.path.append("../")
 # these were needed to pass the testing, reprojection was giving (Inf, Inf)
 import pyproj
-
-from .wells import Well
 
 pyproj.network.set_network_enabled(False)
 

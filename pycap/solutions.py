@@ -17,34 +17,34 @@ def theis(T, S, time, dist, Q, **kwargs):
     """Function to calculate Theis drawdown. Units are not specified, but
         should be consistent length and time
 
-         Calculates the Theis drawdown solution at specified times
-         or distances from a pumping well.
+        Calculates the Theis drawdown solution at specified times
+        or distances from a pumping well.
 
-         https://pubs.usgs.gov/publication/70198446
+        https://pubs.usgs.gov/publication/70198446
 
     Parameters
     ----------
-     T: float
-         transmissivity [L**2/T]
-     S: float
-         storage [unitless]
-     time: float, optionally np.array or list
-         time at which to calculate results [d]
-     dist: float, optionally np.array or list
-         distance at which to calculate results in [ft]
-     Q: float
-         pumping rate (+ is extraction) [ft**3/d]
+    T: float
+        transmissivity [L**2/T]
+    S: float
+        storage [unitless]
+    time: float, optionally np.array or list
+        time at which to calculate results [d]
+    dist: float, optionally np.array or list
+        distance at which to calculate results in [ft]
+    Q: float
+        pumping rate (+ is extraction) [ft**3/d]
      **kwargs: included to all drawdown methods for extra values required in some calls
 
-     Returns
-     -------
-     drawdown: float or array of floats
-         drawdown values at input parameter times/distances [ft]
+    Returns
+    -------
+    drawdown: float or array of floats
+        drawdown values at input parameter times/distances [ft]
 
-     Other Parameters
-     ----------------
+    Other Parameters
+    ----------------
      **kwargs: dict
-         no keyword arguments are needed for the Theis (1935) drawdown solution
+        no keyword arguments are needed for the Theis (1935) drawdown solution
     """
     isarray = False
     if isinstance(time, list):
@@ -104,7 +104,8 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
     Returns
     -------
     drawdown: float
-        single value, meshgrid of drawdowns, or np.array with shape (ntimes, meshgridxx, meshgridyy)
+        single value, meshgrid of drawdowns, or np.array with shape (ntimes,
+            meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes
 
     Other Parameters
@@ -937,8 +938,8 @@ def WardLoughDepletion(
     )
 
     # Initialize output arrays
-    s1 = np.zeros_like(t)
-    s2 = np.zeros_like(t)
+    np.zeros_like(t)
+    np.zeros_like(t)
     # Inverse Fourier transform
     DeltaQ = _StehfestCoeff(1, NSteh1) * _if1_dQ(
         T1, S1, K, lambd, np.log(2) / t, x, y

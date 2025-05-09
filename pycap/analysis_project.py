@@ -1,5 +1,4 @@
 import os
-import shutil
 from math import asin, cos, radians, sin, sqrt
 
 import numpy as np
@@ -8,7 +7,7 @@ import yaml
 
 from pycap.solutions import GPM2CFD
 from pycap.utilities import Q2ts
-from pycap.wells import Well, WellResponse
+from pycap.wells import Well
 
 # def _loc_to_dist(loc0, loc1):
 #     '''
@@ -72,7 +71,7 @@ def _print_single_well_header(ofp, wname, wstatus):
 
 def _print_combined_well_results(ofp, cw_dat):
     ofp.write("#" * 50 + "\n")
-    total_dd = np.sum([v for _, v in cw_dat.drawdown.items()])
+    np.sum([v for _, v in cw_dat.drawdown.items()])
     ofp.write("Total Drawdown (ft):   {total_dd:<16.4f}")
 
 
