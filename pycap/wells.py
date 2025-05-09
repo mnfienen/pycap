@@ -158,7 +158,7 @@ class Well():
             [description]. Defaults to -9999.
         stream_dist: float
             [description]. Defaults to None.
-        drawdown_dist: dloat
+        drawdown_dist: float
             [description]. Defaults to None.
         stream_apportionment: type
             [description]. Defaults to None.
