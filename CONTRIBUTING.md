@@ -14,3 +14,40 @@ into the project you can [fork this repository][2] and
 [1]: https://github.com/DOI-USGS/pycap
 [2]: https://help.github.com/articles/fork-a-repo/
 [3]: https://help.github.com/articles/about-pull-requests/
+
+
+Try to add tests to the test directory.  Make sure they
+run locally by running (from a shell in the main directory)
+
+~~~
+    pytest pycap\tests\
+~~~
+
+
+Use docstrings.  Documentation can be added to the
+source directory in `rst` files.  To have sphinx
+pull in docstrings, add a `rst` file for the
+module to the source/api directory 
+and an entry to `index.rst` in 
+the docs/source/api directory.
+
+In `index.rst`
+
+~~~
+    .. toctree::
+       pycap.name_of_module-no_py_extension
+~~~
+
+
+The module `rst` file looks like
+
+~~~
+    Module name
+    -----------
+
+    Long description if desired....  the automodule commands pull in the docstrings.
+
+    .. automodule:: modulename
+          :members:
+          :show-inheritance:
+~~~
