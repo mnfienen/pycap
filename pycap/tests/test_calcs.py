@@ -712,7 +712,6 @@ def test_transient_dd():
     # read in the pumping timeseries and the depletion results included as a column
     flname = datapath / "transient_dd_ts.csv"
     assert flname.exists()
-    pd.read_csv(flname, index_col=3)
     from pycap.analysis_project import Project
 
     # only one well in the

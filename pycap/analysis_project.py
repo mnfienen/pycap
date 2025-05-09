@@ -71,8 +71,8 @@ def _print_single_well_header(ofp, wname, wstatus):
 
 def _print_combined_well_results(ofp, cw_dat):
     ofp.write("#" * 50 + "\n")
-    np.sum([v for _, v in cw_dat.drawdown.items()])
-    ofp.write("Total Drawdown (ft):   {total_dd:<16.4f}")
+    total_dd = np.sum([v for _, v in cw_dat.drawdown.items()])
+    ofp.write(f"Total Drawdown (ft):   {total_dd:<16.4f}")
 
 
 class Project:

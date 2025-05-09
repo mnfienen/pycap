@@ -937,9 +937,6 @@ def WardLoughDepletion(
         y,
     )
 
-    # Initialize output arrays
-    np.zeros_like(t)
-    np.zeros_like(t)
     # Inverse Fourier transform
     DeltaQ = _StehfestCoeff(1, NSteh1) * _if1_dQ(
         T1, S1, K, lambd, np.log(2) / t, x, y
