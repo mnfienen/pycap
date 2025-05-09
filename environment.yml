@@ -1,4 +1,4 @@
-name: hca
+name: pycap
 channels:
 - conda-forge
 - nodefaults
@@ -27,6 +27,7 @@ dependencies:
 - requests
 - pytest
 - sphinx
+- ruff
 - numpydoc
 - nbsphinx  # for rendering notebooks in sphinx-generated docs
 - sphinx-copybutton
