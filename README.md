@@ -1,7 +1,24 @@
-# WDNR HiCap_Analysis_Tool
-Python Tool for HiCap Well Impacts
-----------------------------------
+pycap 
+=====
 
-Getting Started
----------------
-For more details, see the [hicap_analysis documentation](https://hwreeves-usgs.github.io/HiCap_Analysis_Tool/)
+Python Tool for estimating High Capacity Well Impacts
+-----------------------------------------------------
+
+This python model includes functions to evaluate analytical solutions
+for drawdown and streamflow depletion written to support simple analysis
+of potential streamflow depletion by well.
+
+Documentation
+-------------
+For more details, see the [pycap documentation](https://doi-usgs.github.io/pycap/)
+
+Metadata Links
+--------------
+
+[Code of Conduct](CODE_OF_CONDUCT.md)
+
+[Contributing](CONTRIBUTING.md)
+
+[License](LICENSE.md)
+
+[Disclaimer](DISCLAIMER.md)
