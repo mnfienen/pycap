@@ -60,7 +60,7 @@ def _print_dd_depl(ofp, cw_dd, cw_max_depl, theis_dd_days=None):
         f"          **Maximum Depletion**\n{'Response':30s}{'Depletion(cfs)':30s}\n"
     )
     for ck, v in cw_max_depl.items():
-        ofp.write(f"{ck:30s}{v:<30.4f}\n")
+        ofp.write(f"{ck:30s}{v/3600/24:<30.4f}\n") # convert max depletion to CFS
 
 
 def _print_single_well_header(ofp, wname, wstatus):
@@ -508,6 +508,7 @@ class Project:
                     ]
             # first sum up depletion time series per well to later get max of sum by location
             cw_dep = self.wells[cwell].depletion
+            cw_dep = {k:v/3600/24 for k,v in cw_dep.items()}
             for ck, v in cw_dep.items():
                 self.all_depl_ts = pd.concat(
                     (
@@ -538,6 +539,7 @@ class Project:
 
             # then oldskool max per location
             cw_max_dep = self.wells[cwell].max_depletion
+            cw_max_dep = {k:v/3600/24 for k,v in cw_max_dep.items()}
             for ck, v in cw_max_dep.items():
                 if ck not in self.existing_aggregated_max_depletion.keys():
                     self.existing_aggregated_max_depletion[ck] = v
@@ -558,6 +560,7 @@ class Project:
                     ]
             # first sum up depletion time series per well to later get max of sum by location
             cw_dep = self.wells[cwell].depletion
+            cw_dep = {k:v/3600/24 for k,v in cw_dep.items()}
             for ck, v in cw_dep.items():
                 self.all_depl_ts = pd.concat(
                     (
@@ -585,6 +588,7 @@ class Project:
                     ] += v
             # then oldskool max per location
             cw_max_dep = self.wells[cwell].max_depletion
+            cw_max_dep = {k:v/3600/24 for k,v in cw_max_dep.items()}
             for ck, v in cw_max_dep.items():
                 if ck not in self.proposed_aggregated_max_depletion.keys():
                     self.proposed_aggregated_max_depletion[ck] = v
@@ -605,6 +609,7 @@ class Project:
                     ]
             # first sum up depletion time series per well to later get max of sum by location
             cw_dep = self.wells[cwell].depletion
+            cw_dep = {k:v/3600/24 for k,v in cw_dep.items()}
             for ck, v in cw_dep.items():
                 if ck not in self.total_aggregated_sum_depletion.keys():
                     self.total_aggregated_sum_depletion[ck] = v
@@ -625,6 +630,7 @@ class Project:
                     ] += v
             # then oldskool max per location
             cw_max_dep = self.wells[cwell].max_depletion
+            cw_max_dep = {k:v/3600/24 for k,v in cw_max_dep.items()}
             for ck, v in cw_max_dep.items():
                 if ck not in self.total_aggregated_max_depletion.keys():
                     self.total_aggregated_max_depletion[ck] = v

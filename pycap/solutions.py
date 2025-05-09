@@ -15,7 +15,7 @@ from scipy.special import gammaln
 # define drawdown methods here
 def theis(T, S, time, dist, Q, **kwargs):
     """Function to calculate Theis drawdown. Units are not specified, but
-        should be consistent length and time
+        should be consistent length and time.
 
         Calculates the Theis drawdown solution at specified times
         or distances from a pumping well.
@@ -27,24 +27,20 @@ def theis(T, S, time, dist, Q, **kwargs):
     T: float
         transmissivity [L**2/T]
     S: float
-        storage [unitless]
+        storage [dimensionless]
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft]
+        distance at which to calculate results in [L]
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-     **kwargs: included to all drawdown methods for extra values required in some calls
+        pumping rate (+ is extraction) [L**3/T]
+    **kwargs: included to all drawdown methods for extra values required 
+        in some calls
 
     Returns
     -------
     drawdown: float or array of floats
-        drawdown values at input parameter times/distances [ft]
-
-    Other Parameters
-    ----------------
-     **kwargs: dict
-        no keyword arguments are needed for the Theis (1935) drawdown solution
+        drawdown values at input parameter times/distances [L]
     """
     isarray = False
     if isinstance(time, list):
@@ -74,11 +70,13 @@ def theis(T, S, time, dist, Q, **kwargs):
 
 
 def hunt99ddwn(T, S, time, l, Q, **kwargs):
-    """Calculate drawdown in an aquifer with a partially penetrating stream including streambed resistance (Hunt, 1999).
+    """Function to calculate drawdown in an aquifer with a partially 
+        penetrating stream including streambed resistance (Hunt, 1999). 
+        Units are not specified, but should be consistent length and time.
 
-        The solution becomes the Theis
-        solution if streambed conductance is zero, and approaches an image-well solution
-        from Theis or Glover and Balmer (1954) as streambed conductance gets very large.
+        The solution becomes the Theis solution if streambed conductance 
+        is zero, and approaches an image-well solution from Theis or Glover 
+        and Balmer (1954) as streambed conductance gets very large.
         Note that the well is located at the location x,y = (l, 0) and the stream
         is aligned with y-axis at x=0
 
@@ -90,37 +88,35 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
     Parameters
     ----------
     T: float
-        Transmissivity of aquifer (ft^2/day)
+        Transmissivity of aquifer [L**2/T]
     S: float
-        Storativity of aquifer (dimensionless)
+        Storativity of aquifer [dimensionless]
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     l: float
-        distance between well and stream in [ft]
+        distance between well and stream in [L]
     Q : float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs:  See Other Parameters below
-
-    Returns
-    -------
-    drawdown: float
-        single value, meshgrid of drawdowns, or np.array with shape (ntimes,
-            meshgridxx, meshgridyy)
-        depending on input form of x, y, and ntimes
-
-    Other Parameters
-    ----------------
-    **kwargs: dict
-        keyword arguments needed for the Hunt (1999) drawdown solution are:
+        pumping rate (+ is extraction) [L**3/T]
     streambed: float
         streambed conductance [ft/d] (lambda in the paper)
     x: float, optionally vector from numpy meshgrid giving grid of x,y locations
         distance from stream, [ft]
     y: float, optionally vector from numpy meshgrid giving grid of x,y locations
         distance parallel to stream, well is located at y=0
+    **kwargs:  included to all drawdown methods for extra values required 
+        in some calls
+
+    Returns
+    -------
+    drawdown: float
+        single value, meshgrid of drawdowns, or np.array with shape 
+        (ntimes, meshgridxx, meshgridyy)
+        depending on input form of x, y, and ntimes [L]
+
+
 
     call signature is:
-        _hunt99ddwn(T, S, time, l, Q, streambed=streambed_value, x=X, y=Y)
+        hunt99ddwn(T, S, time, l, Q, streambed=streambed_value, x=X, y=Y)
 
     """
     if "streambed" in kwargs.keys():
@@ -209,7 +205,7 @@ def _ddwn1(l, x, y, T, streambed, time, S):
     """Internal method to calculate Theis drawdown function for a point (x,y)
 
     Used in computing Hunt, 1999 estimate of drawdown.  Equation 30 from
-    the paper.  Variables described in _hunt99ddwn function.
+    the paper.  Variables described in hunt99ddwn function.
     """
     if isinstance(l, list):
         l = np.array(l)
@@ -236,11 +232,12 @@ def _ddwn1(l, x, y, T, streambed, time, S):
 
 
 def _ddwn2(theta, l, x, y, T, streambed, time, S):
-    """Internal method to calculate function that gets integrated in the Hunt (1999) solution
+    """Internal method to calculate function that gets integrated 
+        in the Hunt (1999) solution
 
     Equations 29 and 30 in the paper, theta is the constant
     of integration and the rest of the variables described in the
-    _hunt99ddwn function.
+    hunt99ddwn function.
     """
     if streambed == 0.0:
         return 0.0
@@ -269,8 +266,6 @@ def WardLoughDrawdown(
     NSteh2=2,
 ):
     """Compute drawdown using Ward and Lough (2011) solution
-
-    *needs to be refactored to use kwargs*
 
         Ward and Lough (2011) presented a solution for streamflow depletion
         by a pumping well in a layered aquifer system.  The stream
@@ -419,7 +414,7 @@ def glover(T, S, time, dist, Q, **kwargs):
         no keyword arguments are needed for the Glover and Balmer (1954) depletion solution
     """
     z = dist / np.sqrt(4 * (T / S) * time)
-    return Q * sps.erfc(z) / 3600 / 24  # from CFD back to CFS
+    return Q * sps.erfc(z)
 
 
 def sdf(T, S, dist, **kwargs):
@@ -501,7 +496,7 @@ def walton(T, S, time, dist, Q, **kwargs):
     J = (
         I + 1.52014e-04 * (G**4) + 2.76567e-04 * (G**5) + 4.30638e-05 * (G**6)
     ) ** 16
-    ret_vals = Q * (1 / J) / 3600 / 24  # from CFD back to CFS
+    ret_vals = Q * (1 / J)
     ret_vals[time == 0] = 0.0
     return ret_vals
 
@@ -571,7 +566,7 @@ def hunt99(T, S, time, dist, Q, streambed, **kwargs):
     t1 = sps.erfcx(y)
     t2 = np.exp(b + c - y**2)
     depl = sps.erfc(a) - (t1 * t2)
-    return (Q / (3600 * 24)) * depl
+    return Q * depl
 
 
 def hunt2003(
@@ -671,7 +666,7 @@ def hunt2003(
     depl = sps.erfc(a) - (t1 * t2)
 
     ## corrected depletion for storage of upper semiconfining unit
-    return (Q / (3600 * 24)) * (depl - correction)
+    return Q * (depl - correction)
 
 
 def _F(alpha, dlam, dtime):
@@ -947,7 +942,7 @@ def WardLoughDepletion(
         )
     DeltaQ = 2 * np.pi * lambd * DeltaQ * np.log(2) / t
 
-    return DeltaQ * Q / 3600 / 24  # convert back to CFS from CFD
+    return DeltaQ * Q   # convert back to CFS from CFD
 
 
 def _if1_dQ(T1, S1, K, lambda_, p, x, y):
