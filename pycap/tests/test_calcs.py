@@ -1,8 +1,5 @@
-import sys
-from os import getcwd, pardir
 from pathlib import Path
 
-import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
@@ -342,7 +339,6 @@ def test_sdf():
     https://doi.org/10.1111/j.1745-6584.1968.tb01641.x
     note Jenkins rounded to nearest 10 (page 42)
     """
-    from pycap import wells as wo
 
     dist = 5280.0 / 2.0
     T = 5.0e4 / 7.48
@@ -387,7 +383,6 @@ def test_walton(walton_results):
 
 def test_yaml_parsing(project_spreadsheet_results):
     pars = project_spreadsheet_results
-    from pycap import wells as wo
     from pycap.analysis_project import Project
 
     ap = Project(datapath / "example.yml")
@@ -566,7 +561,7 @@ def test_yml_ts_parsing1():
     from pycap.analysis_project import Project
 
     # this should fail on the integrity tests
-    ap = Project(datapath / "example3.yml")
+    Project(datapath / "example3.yml")
 
 
 @pytest.fixture
@@ -698,7 +693,6 @@ def test_hunt99ddwn():
     Q = (
         1 * 3600 * 24
     )  # no normalization in the paper but use to convert from CFS to CFD
-    K = 0.001  # ft/sec
     l = 200.0
     T = 1000.0
     S = 0.1
@@ -718,7 +712,6 @@ def test_transient_dd():
     # read in the pumping timeseries and the depletion results included as a column
     flname = datapath / "transient_dd_ts.csv"
     assert flname.exists()
-    df = pd.read_csv(flname, index_col=3)
     from pycap.analysis_project import Project
 
     # only one well in the
@@ -728,13 +721,12 @@ def test_transient_dd():
 
     ap.write_responses_csv()
 
-    agg_results = pd.read_csv(ap.csv_output_filename, index_col=0)
+    pd.read_csv(ap.csv_output_filename, index_col=0)
 
 
 def test_ward_lough_depletion(ward_lough_test_data):
     # note: the parameters defined below are intended to result in the nondimensional
     # parameters corresponding with Fig. 6 in DOI: 10.1061/ (ASCE)HE.1943-5584.0000382.
-    import matplotlib.pyplot as plt
 
     T1 = 100
     T2 = 100
