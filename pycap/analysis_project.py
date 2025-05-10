@@ -60,7 +60,7 @@ def _print_dd_depl(ofp, cw_dd, cw_max_depl, theis_dd_days=None):
         f"          **Maximum Depletion**\n{'Response':30s}{'Depletion(cfs)':30s}\n"
     )
     for ck, v in cw_max_depl.items():
-        ofp.write(f"{ck:30s}{v/3600/24:<30.4f}\n") # convert max depletion to CFS
+        ofp.write(f"{ck:30s}{v:<30.4f}\n") # convert max depletion to CFS
 
 
 def _print_single_well_header(ofp, wname, wstatus):
@@ -672,7 +672,9 @@ class Project:
             for cn, cw in self.wells.items():
                 for cresp, cdd in cw.drawdown.items():
                     agg_df.loc[cn, cresp] = cdd[cw.theis_dd_days]
-                for cresp, cdepl in cw.max_depletion.items():
+                cwmaxdep = cw.max_depletion
+                cwmaxdep = {k:v/3600/24 for k,v in cwmaxdep.items()}
+                for cresp, cdepl in cwmaxdep.items():
                     agg_df.loc[cn, cresp] = cdepl
                     basekey = cresp.split(":")[0]
                     agg_base_stream_df.loc[cn, basekey] = cdepl

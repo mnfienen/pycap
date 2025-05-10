@@ -374,11 +374,11 @@ def test_walton(walton_results):
             pars["Q"][idx],
         )
     dep_tot = dep[0] - rch[0] + dep[1] - rch[1]
-    assert np.allclose(dep[0]/ 3600 / 24, res.dep1)
-    assert np.allclose(dep[1]/ 3600 / 24, res.dep2)
-    assert np.allclose(rch[0]/ 3600 / 24, -res.rch1)
-    assert np.allclose(rch[1]/ 3600 / 24, -res.rch2)
-    assert np.allclose(dep_tot/ 3600 / 24, res.total_dep)
+    assert np.allclose(dep[0]/3600/24, res.dep1)
+    assert np.allclose(dep[1]/3600/24, res.dep2)
+    assert np.allclose(rch[0]/3600/24, -res.rch1)
+    assert np.allclose(rch[1]/3600/24, -res.rch2)
+    assert np.allclose(dep_tot/3600/24, res.total_dep)
 
 
 def test_yaml_parsing(project_spreadsheet_results):
@@ -677,7 +677,7 @@ def test_hunt_continuous():
     )
     assert np.allclose(
         df.resp_testing.values,
-        ap.wells["well1"].depletion["testriver"],
+        ap.wells["well1"].depletion["testriver"]/3600/24,
         atol=0.001,
     )
 
