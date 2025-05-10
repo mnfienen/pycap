@@ -273,7 +273,9 @@ def test_project_spreadsheet(project_spreadsheet_results):
     assert np.allclose(dd1 + dd2, pars["muni_dd_combined_proposed"], atol=0.1)
 
     depl1 = well1.depletion
+    depl1 = {k:v/3600/24 for k,v in depl1.items()}
     depl2 = well2.depletion
+    depl2 = {k:v/3600/24 for k,v in depl2.items()}
     stream1_max_depl = np.max(depl1[pars["stream_name_1"]]) + np.max(
         depl2[pars["stream_name_1"]]
     )
@@ -320,9 +322,7 @@ def test_glover():
     against the Glover & Balmer (1954) paper
     """
     dist = [1000, 5000, 10000]
-    Q = (
-        1 * 3600 * 24
-    )  # no normalization in the paper but use to convert from CFS to CFD
+    Q = 1
     time = 365 * 5  # paper evaluates at 5 years in days
     K = 0.001  # ft/sec
     D = 100  # thickness in feet
@@ -374,11 +374,11 @@ def test_walton(walton_results):
             pars["Q"][idx],
         )
     dep_tot = dep[0] - rch[0] + dep[1] - rch[1]
-    assert np.allclose(dep[0], res.dep1)
-    assert np.allclose(dep[1], res.dep2)
-    assert np.allclose(rch[0], -res.rch1)
-    assert np.allclose(rch[1], -res.rch2)
-    assert np.allclose(dep_tot, res.total_dep)
+    assert np.allclose(dep[0]/3600/24, res.dep1)
+    assert np.allclose(dep[1]/3600/24, res.dep2)
+    assert np.allclose(rch[0]/3600/24, -res.rch1)
+    assert np.allclose(rch[1]/3600/24, -res.rch2)
+    assert np.allclose(dep_tot/3600/24, res.total_dep)
 
 
 def test_yaml_parsing(project_spreadsheet_results):
@@ -515,9 +515,7 @@ def test_hunt99_results():
     strmdepl08 appendix.
     """
     dist = [1000, 5000, 10000]
-    Q = (
-        1 * 3600 * 24
-    )  # no normalization in the paper but use to convert from CFS to CFD
+    Q = 1
     time = 365 * 5  # paper evaluates at 5 years in days
     K = 0.001  # ft/sec
     D = 100  # thickness in feet
@@ -621,9 +619,7 @@ def test_geoprocessing(SIR2009_5003_Table2_Batch_results):
     # need to call the hunt99 function
     time = 5.0 * 365.25  # 5 years
     # pumping is 70 gpm; 1 gpm = 0.0022280093 cfs
-    Q = (
-        well_temp.loc[0, "rate"] * 0.0022280093 * 3600 * 24
-    )  # rate in CFD for function.
+    Q = well_temp.loc[0, "rate"] * 0.0022280093
     T = home.loc[11967, "MEDIAN_T"]
     S = 0.01
     streambed = home.loc[11967, "EST_Kv_W"] / well_temp.loc[0, "depth"]
@@ -681,7 +677,7 @@ def test_hunt_continuous():
     )
     assert np.allclose(
         df.resp_testing.values,
-        ap.wells["well1"].depletion["testriver"],
+        ap.wells["well1"].depletion["testriver"]/3600/24,
         atol=0.001,
     )
 
@@ -690,9 +686,7 @@ def test_hunt99ddwn():
     """Test of _hunt99ddwn() function in the
     well.py module.
     """
-    Q = (
-        1 * 3600 * 24
-    )  # no normalization in the paper but use to convert from CFS to CFD
+    Q = 1
     l = 200.0
     T = 1000.0
     S = 0.1
@@ -778,10 +772,10 @@ def test_ward_lough_depletion(ward_lough_test_data):
         y,
     )
     assert np.allclose(
-        dQ1_test["mod"] / Q, dQ1_test["dQ"] / 3600 / 24, atol=0.1
+        dQ1_test["mod"] / Q, dQ1_test["dQ"] , atol=0.1
     )
     assert np.allclose(
-        dQ2_test["mod"] / Q, dQ2_test["dQ"] / 3600 / 24, atol=0.1
+        dQ2_test["mod"] / Q, dQ2_test["dQ"] , atol=0.1
     )
 
 

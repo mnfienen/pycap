@@ -28,6 +28,7 @@ dependencies:
 - pytest
 - sphinx
 - ruff
+- black
 - numpydoc
 - nbsphinx  # for rendering notebooks in sphinx-generated docs
 - sphinx-copybutton
