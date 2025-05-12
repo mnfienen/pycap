@@ -34,7 +34,7 @@ def theis(T, S, time, dist, Q, **kwargs):
         distance at which to calculate results in [L]
     Q: float
         pumping rate (+ is extraction) [L**3/T]
-    **kwargs: included to all drawdown methods for extra values required 
+    **kwargs: included to all drawdown methods for extra values required
         in some calls
 
     Returns
@@ -70,12 +70,12 @@ def theis(T, S, time, dist, Q, **kwargs):
 
 
 def hunt99ddwn(T, S, time, l, Q, **kwargs):
-    """Function to calculate drawdown in an aquifer with a partially 
-        penetrating stream including streambed resistance (Hunt, 1999). 
+    """Function to calculate drawdown in an aquifer with a partially
+        penetrating stream including streambed resistance (Hunt, 1999).
         Units are not specified, but should be consistent length and time.
 
-        The solution becomes the Theis solution if streambed conductance 
-        is zero, and approaches an image-well solution from Theis or Glover 
+        The solution becomes the Theis solution if streambed conductance
+        is zero, and approaches an image-well solution from Theis or Glover
         and Balmer (1954) as streambed conductance gets very large.
         Note that the well is located at the location x,y = (l, 0) and the stream
         is aligned with y-axis at x=0
@@ -103,13 +103,13 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         distance from stream, [ft]
     y: float, optionally vector from numpy meshgrid giving grid of x,y locations
         distance parallel to stream, well is located at y=0
-    **kwargs:  included to all drawdown methods for extra values required 
+    **kwargs:  included to all drawdown methods for extra values required
         in some calls
 
     Returns
     -------
     drawdown: float
-        single value, meshgrid of drawdowns, or np.array with shape 
+        single value, meshgrid of drawdowns, or np.array with shape
         (ntimes, meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes [L]
 
@@ -232,7 +232,7 @@ def _ddwn1(l, x, y, T, streambed, time, S):
 
 
 def _ddwn2(theta, l, x, y, T, streambed, time, S):
-    """Internal method to calculate function that gets integrated 
+    """Internal method to calculate function that gets integrated
         in the Hunt (1999) solution
 
     Equations 29 and 30 in the paper, theta is the constant
@@ -942,7 +942,7 @@ def WardLoughDepletion(
         )
     DeltaQ = 2 * np.pi * lambd * DeltaQ * np.log(2) / t
 
-    return DeltaQ * Q   # convert back to CFS from CFD
+    return DeltaQ * Q  # convert back to CFS from CFD
 
 
 def _if1_dQ(T1, S1, K, lambda_, p, x, y):

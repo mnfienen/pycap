@@ -273,9 +273,9 @@ def test_project_spreadsheet(project_spreadsheet_results):
     assert np.allclose(dd1 + dd2, pars["muni_dd_combined_proposed"], atol=0.1)
 
     depl1 = well1.depletion
-    depl1 = {k:v/3600/24 for k,v in depl1.items()}
+    depl1 = {k: v / 3600 / 24 for k, v in depl1.items()}
     depl2 = well2.depletion
-    depl2 = {k:v/3600/24 for k,v in depl2.items()}
+    depl2 = {k: v / 3600 / 24 for k, v in depl2.items()}
     stream1_max_depl = np.max(depl1[pars["stream_name_1"]]) + np.max(
         depl2[pars["stream_name_1"]]
     )
@@ -374,11 +374,11 @@ def test_walton(walton_results):
             pars["Q"][idx],
         )
     dep_tot = dep[0] - rch[0] + dep[1] - rch[1]
-    assert np.allclose(dep[0]/3600/24, res.dep1)
-    assert np.allclose(dep[1]/3600/24, res.dep2)
-    assert np.allclose(rch[0]/3600/24, -res.rch1)
-    assert np.allclose(rch[1]/3600/24, -res.rch2)
-    assert np.allclose(dep_tot/3600/24, res.total_dep)
+    assert np.allclose(dep[0] / 3600 / 24, res.dep1)
+    assert np.allclose(dep[1] / 3600 / 24, res.dep2)
+    assert np.allclose(rch[0] / 3600 / 24, -res.rch1)
+    assert np.allclose(rch[1] / 3600 / 24, -res.rch2)
+    assert np.allclose(dep_tot / 3600 / 24, res.total_dep)
 
 
 def test_yaml_parsing(project_spreadsheet_results):
@@ -677,7 +677,7 @@ def test_hunt_continuous():
     )
     assert np.allclose(
         df.resp_testing.values,
-        ap.wells["well1"].depletion["testriver"]/3600/24,
+        ap.wells["well1"].depletion["testriver"] / 3600 / 24,
         atol=0.001,
     )
 
@@ -771,12 +771,8 @@ def test_ward_lough_depletion(ward_lough_test_data):
         x,
         y,
     )
-    assert np.allclose(
-        dQ1_test["mod"] / Q, dQ1_test["dQ"] , atol=0.1
-    )
-    assert np.allclose(
-        dQ2_test["mod"] / Q, dQ2_test["dQ"] , atol=0.1
-    )
+    assert np.allclose(dQ1_test["mod"] / Q, dQ1_test["dQ"], atol=0.1)
+    assert np.allclose(dQ2_test["mod"] / Q, dQ2_test["dQ"], atol=0.1)
 
 
 def test_ward_lough_drawdown(ward_lough_test_data):
