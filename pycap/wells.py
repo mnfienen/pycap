@@ -192,9 +192,9 @@ class Well:
             [description]. Defaults to -9999.
         depl_pump_time: int
             [description]. Defaults to -9999.
-        stream_dist: float
+        stream_dist: dict of floats
             [description]. Defaults to None.
-        drawdown_dist: float
+        drawdown_dist: dict of floats
             [description]. Defaults to None.
         stream_apportionment: type
             [description]. Defaults to None.
