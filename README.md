@@ -1,16 +1,16 @@
-pycap 
-=====
+pycap-dss
+=========
 
-Python Tool for estimating High Capacity Well Impacts
------------------------------------------------------
+Python Decision Support System Tool for estimating High Capacity Well Responses
+-------------------------------------------------------------------------------
 
-This python model includes functions to evaluate analytical solutions
+This python module includes functions to evaluate analytical solutions
 for drawdown and streamflow depletion written to support simple analysis
-of potential streamflow depletion by well.
+of potential responses by high-capacity pumping wells.
 
 Documentation
 -------------
-For more details, see the [pycap documentation](https://doi-usgs.github.io/pycap/)
+For more details, see the [pycap documentation](https://doi-usgs.github.io/pycap-dss/)
 
 Metadata Links
 --------------
