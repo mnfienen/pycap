@@ -31,8 +31,6 @@ class WellResponse:
     ) -> None:
         """Class to calculate a single response for a single pumping well.
 
-        *refactor for kwargs?*
-
         Parameters
         ----------
         name: string

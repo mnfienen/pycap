@@ -14,6 +14,18 @@ def _loc_to_dist(loc0, loc1):
     """
     Distance between two points in lat/long using Haversine Formula assuming
     lat/long in decimal degrees, returned in feet
+
+    Parameters
+    ----------
+    loc0: list-like pair of floats
+        one point location in lat/long
+    loc1: list-like pair of floats
+        one point location in lat/long
+
+    Returns
+    -------
+    dist: float
+        distance between loc0 and loc1 in feet
     """
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(radians, [loc0[0], loc0[1], loc1[0], loc1[1]])
@@ -28,11 +40,19 @@ def _loc_to_dist(loc0, loc1):
 
 
 def _print_to_screen_and_file(s, ofp):
-    """[summary]
+    """function to print formatted output to both
+    the screen and a file
 
-    Args:
-        s ([type]): [description]
-        ofp ([type]): [description]
+    Parameters
+    ----------
+    s: string
+        string to point
+    ofp: file pointer
+        handle to an open output file for printing to
+
+    Returns
+    -------
+    None
     """
     ofp.write(f"{s}\n")
     print(s)
@@ -40,6 +60,26 @@ def _print_to_screen_and_file(s, ofp):
 
 # some helper functions for printing out results
 def _print_dd_depl(ofp, cw_dd, cw_max_depl, theis_dd_days=None):
+    """Function to write drawdown and depletion to a file.
+
+
+    Parameters
+    ----------
+    ofp: file pointer
+        handle to an open output file for printing to
+    cw_dd: float
+        Drawdown value(s) to print
+    cw_max_depl: float
+        Maximum depletion value(s) to print
+
+    theis_dd_days: int
+        Optional index from which to dereference drawdown value.
+        Defaults to None.
+
+    Returns
+    -------
+    None
+    """
     ofp.write(
         f"             **Drawdown**\n{'Response':30s}{'Drawdown(ft)':30s}\n"
     )
@@ -71,7 +111,21 @@ def _print_combined_well_results(ofp, cw_dat):
 
 class Project:
     def __init__(self, ymlfile):
-        """[summary]"""
+        """
+        Highest-level Class for a well drawdown and/or depletion analysis.
+        This Class is developed for the specific analysis needs of the
+        Wisconsin Department of Natural Resources and was initially created
+        to reproduce the logic and results of an internal, spreadsheet-driven
+        workflow. This workflow may also serve as an example template for other
+        users.
+
+        Parameters
+        ----------
+        ymlfile: string or pathlib.Path
+            Path to a yml file containing configuration information for a project.
+
+
+        """
         self.status_categories = [
             "existing",
             "active",
@@ -151,7 +205,7 @@ class Project:
 
         # parse well blocks
         if len(self.wellkeys) > 0:
-            self._parse_wells(d, self.ts, self.Q_ts)
+            self._parse_wells(d, self.ts)
         else:
             raise ("No wells were defined in the input file. Goodbye")
 
@@ -167,8 +221,10 @@ class Project:
     def _parse_project_properties(self, pp):
         """Method to parse all the project properties from the YAML file block
 
-        Args:
-            pp ([dict]): project properties block read from YML]
+        Parameters
+        ----------
+        pp: dict
+            Project properties block read from YML file
         """
         if "depl_method" in pp.keys():
             self.depl_method = pp["depl_method"]
@@ -190,9 +246,12 @@ class Project:
     def _parse_responses(self, keys, d):
         """populate information about the responses to pull from in calculations
 
-        Args:
-            keys ([type]): [description]
-            d ([dict]): yml file data
+        Parameters
+        ----------
+        keys: list like
+            Dictionary keys to read from d
+        d: dict
+            yml file data
         """
 
         if keys[0].lower().startswith("dd"):
@@ -210,14 +269,16 @@ class Project:
                     "streambed_conductance"
                 ]
 
-    def _parse_wells(self, d, ts, Q_ts):
+    def _parse_wells(self, d, ts):
         """populate information about wells assigning apportionment values and
             the lists of proposed and existing wells
 
-        Args:
-            d (dict): yml file data
-            ts (bool): flag as to whether a timeseries dataframe was read in
-            Q_ts (pandas DataFrame): pumping data table for all the wells
+        Parameters
+        ----------
+        d: dict
+            yml file data
+        ts: bool
+            flag as to whether a timeseries dataframe was read in
         """
         self.__well_data = {}
 
@@ -251,8 +312,10 @@ class Project:
                     ] = d[ck][cak]["apportionment"]
 
     def _create_well_objects(self):
-        """Prepare to populate a Well object for each well,
-        using the attributes of each well and response"""
+        """
+        Prepare to populate a Well object for each well,
+        using the attributes of each well and response
+        """
 
         for ck, cw in self._Project__well_data.items():
             # update defaults as appropriate
@@ -337,7 +400,9 @@ class Project:
             )
 
     def _report_yaml_input(self):
-        """summarize broad details of the YAML file read in"""
+        """
+        summarize broad details of the YAML file read in
+        """
         logfile = str(self.ymlfile).replace(".yml", ".yml.import_report")
         logfile = logfile.replace(".yaml", ".yml.import_report")
         with open(logfile, "w") as ofp:
@@ -384,7 +449,9 @@ class Project:
                 )
 
     def report_responses(self):
-        # make a report file - named from the YML name
+        """
+        make a report file - named from the YML name
+        """
         ymlbase = self.ymlfile.name
         outfile = ymlbase.replace(".yml", ".report.txt")
         self.report_filename = self.outpath / outfile
@@ -466,6 +533,9 @@ class Project:
             )
 
     def aggregate_results(self):
+        """
+        Aggregate all results from the Project
+        """
         # make a master dataframe for all the results
         times = range(1, self.ts_len + 1)
         self.all_depl_ts = pd.DataFrame(index=times)
@@ -635,6 +705,9 @@ class Project:
                     self.total_aggregated_max_depletion[ck] += v
 
     def write_responses_csv(self):
+        """
+        Write all responses to an external CSV file
+        """
         # create a dataframe to hold the aggregated results
         cols = [
             f"{i}:dd (ft)" for i in self.total_aggregated_drawdown.keys()
