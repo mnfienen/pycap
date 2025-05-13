@@ -63,8 +63,10 @@ class WellResponse:
         """
         self._drawdown = None
         self._depletion = None
-        self.name = name  # name of response (stream, or drawdown response (e.g. assessed well, lake, spring)) evaluated
-        self.response_type = response_type  # might use this later to sort out which response to return
+        self.name = name  # name of response (stream, or drawdown response
+        # (e.g. assessed well, lake, spring)) evaluated
+        self.response_type = response_type  # might use this later to
+        # sort out which response to return
         self.T = T
         self.T_gpd_ft = T * 7.48
         self.S = S
@@ -78,7 +80,8 @@ class WellResponse:
         self.streambed_conductance = streambed_conductance
 
     def _calc_drawdown(self):
-        """calculate drawdown at requested distance and time using solution given as attribute to the object"""
+        """calculate drawdown at requested distance and
+        time using solution given as attribute to the object"""
         dd_f = pycap.ALL_DD_METHODS[self.dd_method.lower()]
         # start with zero drawdown
         dd = np.zeros(len(self.Q))
@@ -102,7 +105,8 @@ class WellResponse:
         return dd
 
     def _calc_depletion(self):
-        """calculate streamflow depletion at time using solution given as attribute to the object"""
+        """calculate streamflow depletion at
+        time using solution given as attribute to the object"""
         depl_f = pycap.ALL_DEPL_METHODS[self.depl_method.lower()]
         # start with zero depletion
         depl = np.zeros(len(self.Q))
@@ -135,8 +139,8 @@ class WellResponse:
             for idx, cQ in zip(deltaQ.index, deltaQ.values):
                 idx -= 2
                 ct = list(range(len(self.Q) - idx))
-                # note that by setting Q negative from the diff calculations, we always add
-                # below for the image wells
+                # note that by setting Q negative from the diff
+                # calculations, we always add below for the image wells
                 depl[idx:] += depl_f(
                     T,
                     self.S,
@@ -157,7 +161,8 @@ class WellResponse:
 
 
 class Well:
-    """Object to evaluate a pending (or existing, or a couple other possibilities) well with all relevant impacts.
+    """Object to evaluate a pending (or existing,
+    or a couple other possibilities) well with all relevant impacts.
     Preprocessing makes unit conversions and calculates distances as needed
     """
 
@@ -219,11 +224,16 @@ class Well:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
-        self.stream_responses = {}  # dict of WellResponse objects for this well with streams
-        self.drawdown_responses = {}  # dict of WellResponse objects for this well with drawdown responses
-        self.well_status = well_status  # this is for the well object - later used for aggregation and must be
-        # {'existing', 'active', 'pending', 'new_approved', 'inactive' }
-        # make sure stream names consistent between dist and apportionment
+        self.stream_responses = {}  # dict of WellResponse objects
+        # for this well with streams
+        self.drawdown_responses = {}  # dict of WellResponse objects
+        # for this well with drawdown responses
+        self.well_status = well_status  # this is for the well object -
+        # later used for aggregation and must be
+        # {'existing', 'active', 'pending',
+        # 'new_approved', 'inactive' }
+        # make sure stream names consistent
+        # between dist and apportionment
         if stream_dist is not None and stream_apportionment is not None:
             assert (
                 len(

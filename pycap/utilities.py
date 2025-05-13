@@ -38,9 +38,12 @@ def create_timeseries_template(
     pumping rates in gallons per minute for running multiple times
 
     Args:
-        filename (str, optional): Filename in which to write the template. Defaults to '../examples/blank_ts.csv'.
-        numyears (int, optional): Number of repeated years to generate. Defaults to 1.
-        well_ids(list, optional): list of well identifiers which will be used as column names
+        filename (str, optional): Filename in which to write the template.
+            Defaults to '../examples/blank_ts.csv'.
+        numyears (int, optional): Number of repeated years to generate.
+            Defaults to 1.
+        well_ids(list, optional): list of well identifiers
+            which will be used as column names
     """
 
     # do not set to true, unless maybe you are running a single year

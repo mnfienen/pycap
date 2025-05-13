@@ -9,17 +9,11 @@ from pycap.solutions import GPM2CFD
 from pycap.utilities import Q2ts
 from pycap.wells import Well
 
-# def _loc_to_dist(loc0, loc1):
-#     '''
-#     Euclidean distance between two 2-d points assuming expressed in consistent units
-#     '''
-#     dist = np.sqrt((loc0[0]-loc1[0])**2 +(loc0[1]-loc1[1])**2)
-#     return dist
-
 
 def _loc_to_dist(loc0, loc1):
     """
-    Distance between two points in lat/long using Haversine Formula assuming lat/long in decimal degrees, returned in feet
+    Distance between two points in lat/long using Haversine Formula assuming
+    lat/long in decimal degrees, returned in feet
     """
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(radians, [loc0[0], loc0[1], loc1[0], loc1[1]])
@@ -235,8 +229,10 @@ class Project:
             if ts is True:
                 if "Q" in d[ck].keys() or "pumping_days" in d[ck].keys():
                     raise (
-                        "ERROR:\ntime series file was supplied AND Q of pumping_days was supplied for at\n"
-                        + "one well. User can only supply pumping rates in one or the other\n"
+                        "ERROR:\ntime series file was supplied AND Q of "
+                        + "pumping_days was supplied for at\n"
+                        + "one well. User can only supply pumping "
+                        + "rates in one or the other\n"
                         + "Please try again...."
                     )
 
@@ -255,7 +251,8 @@ class Project:
                     ] = d[ck][cak]["apportionment"]
 
     def _create_well_objects(self):
-        """Prepare to populate a Well object for each well, using the attributes of each well and response"""
+        """Prepare to populate a Well object for each well,
+        using the attributes of each well and response"""
 
         for ck, cw in self._Project__well_data.items():
             # update defaults as appropriate
