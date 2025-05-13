@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'HiCap Analysis'
+project = 'pycap-dss'
 copyright = 'see documentation'
 author = 'Mike Fienen, Aaron Pruitt, Howard Reeves'
 
