@@ -13,3 +13,13 @@ from .solutions import (
     theis,
     walton,
 )
+
+from .wells import (
+    Well, 
+    WellResponse
+)
+
+from .utilities import(
+    Q2ts,
+    create_timeseries_template,
+)
