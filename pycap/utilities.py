@@ -9,13 +9,19 @@ from pycap.solutions import GPM2CFD
 def Q2ts(depl_pump_time, depletion_years, Q_scalar):
     """Function to convert a scalar Q to a time series
 
-    Args:
-        depl_pump_time (float): Number of days the well should be pumping from day 0
-        depletion_years (float): Number of years of pumping to be simulated
-        Q_scalar (float): Pumping rate in GPM
+    Parameters
+    ----------
+    depl_pump_time: float
+        Number of days the well should be pumping from day 0
+    depletion_years: float
+        Number of years of pumping to be simulated
+    Q_scalar: float
+        Pumping rate [L**3/d]
 
-    Returns:
-        Q (pd.Series): day-indexed time series of pumping in CFD
+    Returns
+    -------
+    Q: pd.Series
+        time-indexed time series of pumping [L**3/d]
     """
     y1 = np.zeros(365)
     y1[:depl_pump_time] = Q_scalar
@@ -37,10 +43,18 @@ def create_timeseries_template(
     """create a template timeseries CSV file ready to populate with
     pumping rates in gallons per minute for running multiple times
 
-    Args:
-        filename (str, optional): Filename in which to write the template. Defaults to '../examples/blank_ts.csv'.
-        numyears (int, optional): Number of repeated years to generate. Defaults to 1.
-        well_ids(list, optional): list of well identifiers which will be used as column names
+    Parameters
+    ----------
+    filename: str, optional
+        Filename in which to write the template.
+        Defaults to '../examples/blank_ts.csv'.
+    numyears: int, optional
+        Number of repeated years to generate.
+        Defaults to 1.
+    well_ids: list, optional
+        list of well identifiers
+        which will be used as column names
+
     """
 
     # do not set to true, unless maybe you are running a single year

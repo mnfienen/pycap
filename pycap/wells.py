@@ -31,8 +31,6 @@ class WellResponse:
     ) -> None:
         """Class to calculate a single response for a single pumping well.
 
-        *refactor for kwargs?*
-
         Parameters
         ----------
         name: string
@@ -40,31 +38,38 @@ class WellResponse:
         response_type: string
             reserved for future implementation
         T: float
-            Aquifer Transmissivity
+            Aquifer Transmissivity [L**2/T]
         S: float
-            Aquifer Storage
+            Aquifer Storage [unitless]
         dist: float
-            Distance between well and response
+            Distance between well and response [L]
         Q: pandas series
-            Pumping rate changes and times
-        stream_apportionment: string
-                ([type], optional): [description]. Defaults to None.
-        dd_method: string
-            [description]. Defaults to 'Theis'.
-        depl_method:string
-            (str, optional): [description]. Defaults to 'Glover'.
-        theis_time: integer
-            (int, optional): [description]. Defaults to -9999.
-        depl_pump_time: integer
-            (int, optional): [description]. Defaults to -99999.
+            Pumping rate changes and times [L**3/T]
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
+        dd_method: string, optional
+            Method to be used for drawdown calculations. Defaults to 'Theis'.
+        depl_method: string, optional
+            Method to be used for depletion calculations. Defaults to 'Glover'.
+        theis_time: integer, optional
+            Time at which drawdown calculation should be made [T].
+            Defaults to -9999.
+        depl_pump_time: integer, optional
+            Length of time per year that pumping should be simulated for depletion
+            calculations [T]. Not used if pumping time series is used.
+            Defaults to -99999.
         streambed_conductance: float
-            Streambed conductance for the Hunt99 depletion method. Defaults to None
+            Streambed conductance for the Hunt99 depletion method [L/T].
+            Defaults to None
 
         """
         self._drawdown = None
         self._depletion = None
-        self.name = name  # name of response (stream, or drawdown response (e.g. assessed well, lake, spring)) evaluated
-        self.response_type = response_type  # might use this later to sort out which response to return
+        self.name = name  # name of response (stream, or drawdown response
+        # (e.g. assessed well, lake, spring)) evaluated
+        self.response_type = response_type  # might use this later to
+        # sort out which response to return
         self.T = T
         self.T_gpd_ft = T * 7.48
         self.S = S
@@ -78,7 +83,8 @@ class WellResponse:
         self.streambed_conductance = streambed_conductance
 
     def _calc_drawdown(self):
-        """calculate drawdown at requested distance and time using solution given as attribute to the object"""
+        """calculate drawdown at requested distance and
+        time using solution given as attribute to the object"""
         dd_f = pycap.ALL_DD_METHODS[self.dd_method.lower()]
         # start with zero drawdown
         dd = np.zeros(len(self.Q))
@@ -102,7 +108,8 @@ class WellResponse:
         return dd
 
     def _calc_depletion(self):
-        """calculate streamflow depletion at time using solution given as attribute to the object"""
+        """calculate streamflow depletion at
+        time using solution given as attribute to the object"""
         depl_f = pycap.ALL_DEPL_METHODS[self.depl_method.lower()]
         # start with zero depletion
         depl = np.zeros(len(self.Q))
@@ -135,8 +142,8 @@ class WellResponse:
             for idx, cQ in zip(deltaQ.index, deltaQ.values):
                 idx -= 2
                 ct = list(range(len(self.Q) - idx))
-                # note that by setting Q negative from the diff calculations, we always add
-                # below for the image wells
+                # note that by setting Q negative from the diff
+                # calculations, we always add below for the image wells
                 depl[idx:] += depl_f(
                     T,
                     self.S,
@@ -157,7 +164,8 @@ class WellResponse:
 
 
 class Well:
-    """Object to evaluate a pending (or existing, or a couple other possibilities) well with all relevant impacts.
+    """Object to evaluate a pending (or existing,
+    or a couple other possibilities) well with all relevant impacts.
     Preprocessing makes unit conversions and calculates distances as needed
     """
 
@@ -176,32 +184,40 @@ class Well:
         depl_method="walton",
         streambed_conductance=None,
     ) -> None:
-        """[summary]
+        """
+        Object to evaluate a pending (or existing,
+        or a couple other possibilities) well with all relevant impacts.
+        Preprocessing makes unit conversions and calculates distances as needed
 
         Parameters
         ----------
         T: float
-            Aquifer Transmissivity
+            Aquifer Transmissivity [L**2/T]
         S: float
-            Aquifer Storage
+            Aquifer Storage [unitless]
         Q: pandas series
-            Pumping rate changes and times
-        depletion_years: int
-            [description]. Defaults to 4.
+            Pumping rate changes and times [L**3/T]
+        depletion_years: int, optional
+            Number of years over which to calculate depletion. Defaults to 4.
         theis_dd_days: int
-            [description]. Defaults to -9999.
-        depl_pump_time: int
-            [description]. Defaults to -9999.
-        stream_dist: float
-            [description]. Defaults to None.
+            Number of days at which drawdown is calculated. Defaults to -9999.
+        depl_pump_time: integer, optional
+            Length of time per year that pumping should be simulated for depletion
+            calculations [T]. Not used if pumping time series is used.
+            Defaults to -99999.
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
         drawdown_dist: float
-            [description]. Defaults to None.
-        stream_apportionment: type
-            [description]. Defaults to None.
-        depl_method: string
-            description]. Defaults to walton
-        streambed_conductance: dict
-            dictionary of streambed conductances. Defaults to None
+            Distance between well and drawdown calculation location. [L]
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
+        depl_method: string, optional
+            Method to be used for depletion calculations. Defaults to 'Glover'.
+        streambed_conductance: float
+            Streambed conductance for the Hunt99 depletion method [L/T].
+            Defaults to None
         """
 
         # placeholders for values returned with @property decorators
@@ -219,11 +235,16 @@ class Well:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
-        self.stream_responses = {}  # dict of WellResponse objects for this well with streams
-        self.drawdown_responses = {}  # dict of WellResponse objects for this well with drawdown responses
-        self.well_status = well_status  # this is for the well object - later used for aggregation and must be
-        # {'existing', 'active', 'pending', 'new_approved', 'inactive' }
-        # make sure stream names consistent between dist and apportionment
+        self.stream_responses = {}  # dict of WellResponse objects
+        # for this well with streams
+        self.drawdown_responses = {}  # dict of WellResponse objects
+        # for this well with drawdown responses
+        self.well_status = well_status  # this is for the well object -
+        # later used for aggregation and must be
+        # {'existing', 'active', 'pending',
+        # 'new_approved', 'inactive' }
+        # make sure stream names consistent
+        # between dist and apportionment
         if stream_dist is not None and stream_apportionment is not None:
             assert (
                 len(
