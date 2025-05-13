@@ -1,4 +1,4 @@
-name: hicap_ci
+name: pycap_ci
 channels:
 - conda-forge
 - nodefaults
