@@ -11,7 +11,7 @@ setuptools.setup(
     description="Stream Depletion analysis tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/WDNR-Water-Use/HiCap_Analysis_Tool.",
+    url="https://github.com/DOI-USGS/pycap-dss.",
     packages=setuptools.find_packages(),
     install_requires=["matplotlib","pyyaml","geopandas","numpy","scipy","pandas","gdal","fiona","rasterio>=1.0","rasterstats","shapely","rtree","pyproj>=2.0","pyshp","xlrd", "openpyxl", "requests", "pytest"],
     classifiers=[
