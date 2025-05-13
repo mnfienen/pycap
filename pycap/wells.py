@@ -263,6 +263,7 @@ class Well:
         drawdown_dist=None,
         stream_apportionment=None,
         depl_method="walton",
+        drawdown_method="theis",
         streambed_conductance=None,
         Bprime=None,
         Bdouble=None,
@@ -308,6 +309,8 @@ class Well:
                 attributed to each. Defaults to None.
         depl_method: string, optional
             Method to be used for depletion calculations. Defaults to 'Glover'.
+        drawdown_method: string, optional
+            Method to be used for drawdown calculations. Defaults to 'Theis'.
         streambed_conductance: float
             Streambed conductance for the Hunt99 depletion method [L/T].
             Defaults to None
@@ -351,6 +354,7 @@ class Well:
         self._drawdown = None
         self._max_depletion = None
         self.depl_method = depl_method
+        self.drawdown_method = drawdown_method
         self.stream_dist = stream_dist
         self.drawdown_dist = drawdown_dist
         self.T = T
@@ -438,7 +442,7 @@ class Well:
                     dist=cdist,
                     theis_time=self.theis_dd_days,
                     Q=self.Q,
-                    dd_method="theis",
+                    dd_method=self.drawdown_method,
                 )
 
     @property

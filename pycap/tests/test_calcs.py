@@ -781,3 +781,21 @@ def test_ward_lough_drawdown(ward_lough_test_data):
     assert np.allclose(
         s2_test["mod"] * allpars["T2"] / allpars["Q"], s2_test["s"], atol=0.035
     )
+
+
+def test_complex_well(ward_lough_test_data):
+    from pycap.wells import Well
+
+    allpars = ward_lough_test_data["params"]
+    allpars["T"] = allpars["T1"]
+    allpars["S"] = allpars["S1"]
+    allpars["stream_dist"] = None
+    allpars["drawdown_dist"] = None
+
+    allpars.pop("T1")
+    allpars.pop("S1")
+    allpars.pop("dist")
+
+    w = Well("newwell", depl_method="wardlough", **allpars)
+
+    w
