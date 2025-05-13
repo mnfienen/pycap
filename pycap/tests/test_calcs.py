@@ -32,13 +32,13 @@ def theis_results():
     Q = [
         float(i) * pycap.GPM2CFD
         for i in [
-            p.loc["Pumping Rate Well #1 (gpm)"],
-            p.loc["Pumping Rate Well #2 (gpm)"],
+            p.loc["Pumping Rate Well #1 (gpm)"].iloc[0],
+            p.loc["Pumping Rate Well #2 (gpm)"].iloc[0],
         ]
     ]
-    S = float(p.loc["Storage Coefficient (unitless)"])
-    T = float(p.loc["Transmissivity (ft2/day)"])
-    time = float(p.loc["Theis Time of Pumping (days)"])
+    S = float(p.loc["Storage Coefficient (unitless)"].iloc[0])
+    T = float(p.loc["Transmissivity (ft2/day)"].iloc[0])
+    time = float(p.loc["Theis Time of Pumping (days)"].iloc[0])
     params = {"Q": Q, "S": S, "T": T, "time": time}
     theis_res = pd.read_excel(
         excel_file,
