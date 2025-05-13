@@ -281,48 +281,51 @@ def WardLoughDrawdown(
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
+        Transmissivity  in the upper aquifer [L**2/T]
+        (K*D or T1 in the original paper)
     S: float
-        storage [unitless] (V in the original paper)
-    time: float, optionally np.array or list
-        time at which to calculate results [d]
-    dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        Specific yield for upper aquifer [unitless]
+        (S1 in the original paper)
+    t: float, optionally np.array or list
+        time at which to calculate results [T]
+    dist: Distance between pumping well and stream [L]
+        (L in the original paper)
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs: see Other Parameters below
+        pumping rate (+ is extraction) [L**3/T]
 
     Returns
     -------
     ddwn float
-        drawdown at specified location or locations [ft]
+        drawdown at specified location or locations [L]
 
     Other Parameters
     ----------------
-    **kwargs: dict
-        keyword arguments needed for the Hunt (2003) depletion solution are:
     T2: float
-        Transmissivity of
+        Transmissivity of deeper system
     S2: float
         Storativity of
     streambed_thick: float
         thickness of streambed
     streambed_K: float
-        hydraulic conductivity of streambed, ft/day
+        hydraulic conductivity of streambed, [L/T]
     aquitard_thick: float
-        thickness of intervening leaky aquitard, ft
+        thickness of intervening leaky aquitard, [L]
     aquitard_K: float
-        hydraulic conductivity of intervening leaky aquifer, ft/day
+        hydraulic conductivity of intervening leaky aquifer, [L/T]
     x: float
-        xxxxxx
+        x-coordinate of drawdown location
+        (with origin being x=0 at stream location) [L]
     y: float
-        yyyyyy
+        y-coordinate of drawdown location
+        (with origin being y=0 at pumping well location) [L]
     NSteh1: int
-        IIIIII
+        Number of Stehfest series levels - algorithmic tuning parameter.
+        Defaults to 2.
     NStehl2: int
-        IIIII
+        Number of Stehfest series levels - algorithmic tuning parameter.
+        Defaults to 2.
     width: float
-        stream width (b in paper) [ft]
+        stream width (b in paper) [L]
 
     """
     # first nondimensionalize all the parameters
@@ -392,26 +395,23 @@ def glover(T, S, time, dist, Q, **kwargs):
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
+        transmissivity [L**2/T]
     S: float
-        storage [unitless] (V in the original paper)
+        storage [unitless]
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        distance at which to calculate results in [ft]
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs: included to all depletion methods for extra values reuired in some calls
+        pumping rate (+ is extraction) [L**3/T]
+    **kwargs: included to all depletion methods for extra values required in some calls
 
     Returns
     -------
     drawdown: float
         depletion values at at input parameter times/distances
 
-    Other Parameters
-    ----------------
-    **kwargs: dict
-        no keyword arguments are needed for the Glover and Balmer (1954) depletion solution
+
     """
     z = dist / np.sqrt(4 * (T / S) * time)
     return Q * sps.erfc(z)
@@ -432,17 +432,17 @@ def sdf(T, S, dist, **kwargs):
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d]
+        transmissivity [L**2/T]
     S: float
         storage [unitless]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft]
-    **kwargs: just included to all for extra values in call
+        distance at which to calculate results in [L]
+    **kwargs: included to all depletion methods for extra values required in some calls
 
     Returns
     -------
     SDF: float
-        Stream depletion factor [d]
+        Stream depletion factor [T]
     """
     if isinstance(dist, list):
         dist = np.array(dist)
@@ -457,16 +457,19 @@ def walton(T, S, time, dist, Q, **kwargs):
         Walton, W.C., Groundwater Pumping Tests:  Lewis Publishers, Chelsea,
         Michigan, 201 p.
 
+        Note that unlike the other depletion functions, this Walton function
+        is unit-specific, using feet and days as dimensions.
+
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
+        transmissivity [gal per d per ft]
     S: float
-        storage [unitless] (V in the original paper)
+        storage [unitless]
     time: float, optionally np.array or list
         time at which to calculate results [d]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        distance at which to calculate results in [ft]
     Q: float
         pumping rate (+ is extraction) [ft**3/d]
     **kwargs: included to all depletion methods for extra values required in some calls
@@ -476,10 +479,6 @@ def walton(T, S, time, dist, Q, **kwargs):
     drawdown: float
         depletion values at at input parameter times/distances
 
-    Other Parameters
-    ----------------
-    **kwargs: dict
-        no keyword arguments are needed for Walton (1987) depletion solution
     """
     if isinstance(time, list):
         time = np.array(time)
@@ -514,26 +513,25 @@ def hunt99(T, S, time, dist, Q, streambed, **kwargs):
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
+        transmissivity [L**2/T]
     S: float
-        storage [unitless] (V in the original paper)
+        storage [unitless]
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        distance at which to calculate results in [L]
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs: see Other Parameters below
+        pumping rate (+ is extraction) [L**3/T]
+    **kwargs: included to all depletion methods for extra values required in some calls
 
     Returns
     -------
     Qs: float
-        streamflow depletion rate, optionally np.array or list depending on input of time and dist [CFS]
+        streamflow depletion rate, optionally np.array or list
+        depending on input of time and dist [L**3/T]
 
     Other Parameters
     ----------------
-    **kwargs: dict
-        keyword arguments needed for the Hunt (1999) depletion solution are:
     streambed: float
         streambed conductance [ft/d] (lambda in the paper)
     """
@@ -586,38 +584,39 @@ def hunt2003(
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
+        transmissivity [L**2/T]
     S: float
-        storage [unitless] (V in the original paper)
+        storage [unitless]
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        distance at which to calculate results in [L]
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs: see Other Parameters below
+        pumping rate (+ is extraction) [L**3/T]
+    **kwargs: included to all depletion methods for extra values required in some calls
 
     Returns
     -------
     Qs: float
-        streamflow depletion rate, optionally np.array or list depending on input of time and dist [CFS]
+        streamflow depletion rate, optionally np.array or list
+        depending on input of time and dist [L**3/T]
 
     Other Parameters
     ----------------
-    **kwargs: dict
-        keyword arguments needed for the Hunt (2003) depletion solution are:
     Bprime: float
-        saturated thickness of semiconfining layer containing stream, [ft]
+        saturated thickness of semiconfining layer containing stream, [L]
     Bdouble: float
-        distance from bottom of stream to bottom of semiconfining layer, [ft] (aquitard thickness beneath the stream)
+        distance from bottom of stream to bottom of semiconfining layer,
+        [L] (aquitard thickness beneath the stream)
     K: float
-        hydraulic conductivity of semiconfining layer [ft/day]
+        hydraulic conductivity of semiconfining layer [L/T]
     sigma: float
         porosity of semiconfining layer
     width: float
-        stream width (b in paper) [ft]
+        stream width (b in paper) [T]
     streambed: float
-        streambed conductance [ft/d] (lambda in the paper), only used if K is less than 1e-10
+        streambed conductance [L/T] (lambda in the paper),
+        only used if K is less than 1e-10
     """
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
@@ -850,11 +849,8 @@ def WardLoughDepletion(
     x=0,
     y=0,
     NSteh1=2,
-    NStehl2=2,
 ):
     """Compute streamflow depletion using Ward and Lough (2011) solution
-
-    *needs to be refactored to use kwargs*
 
         Ward and Lough (2011) presented a solution for streamflow depletion
         by a pumping well in a layered aquifer system.  The stream
@@ -870,48 +866,49 @@ def WardLoughDepletion(
     Parameters
     ----------
     T: float
-        transmissivity [ft**2/d] (K*D in the original paper)
-    S: float
-        storage [unitless] (V in the original paper)
+        transmissivity [L**2/T]
+    storage [unitless]
+        specific yield in the upper q aquifer
     time: float, optionally np.array or list
-        time at which to calculate results [d]
+        time at which to calculate results [T]
     dist: float, optionally np.array or list
-        distance at which to calculate results in [ft] (X1 in the paper)
+        distance at which to calculate results in [L]
     Q: float
-        pumping rate (+ is extraction) [ft**3/d]
-    **kwargs: see Other Parameters below
+        pumping rate (+ is extraction) [L**3/T]
+     **kwargs: included to all depletion methods for extra values required in some calls
+
 
     Returns
     -------
     Qs: float
-        streamflow depletion rate, optionally np.array or list depending on input of time and dist [CFS]
+        streamflow depletion rate, optionally np.array or list
+        depending on input of time and dist [L**3/T]
 
     Other Parameters
     ----------------
-    **kwargs: dict
-        keyword arguments needed for the Hunt (2003) depletion solution are:
     T2: float
-        Transmissivity of
+        Transmissivity of deeper system
     S2: float
         Storativity of
     streambed_thick: float
         thickness of streambed
     streambed_K: float
-        hydraulic conductivity of streambed, ft/day
+        hydraulic conductivity of streambed, [L/T]
     aquitard_thick: float
-        thickness of intervening leaky aquitard, ft
+        thickness of intervening leaky aquitard, [L]
     aquitard_K: float
-        hydraulic conductivity of intervening leaky aquifer, ft/day
+        hydraulic conductivity of intervening leaky aquifer, [L/T]
     x: float
-        xxxxxx
+        x-coordinate of drawdown location
+        (with origin being x=0 at stream location) [L]
     y: float
-        yyyyyy
+        y-coordinate of drawdown location
+        (with origin being y=0 at pumping well location) [L]
     NSteh1: int
-        IIIIII
-    NStehl2: int
-        IIIII
+        Number of Stehfest series levels - algorithmic tuning parameter.
+        Defaults to 2.
     width: float
-        stream width (b in paper) [ft]
+        stream width (b in paper) [L]
 
     """
     # first nondimensionalize all the parameters
