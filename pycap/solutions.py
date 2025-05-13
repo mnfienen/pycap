@@ -69,7 +69,9 @@ def theis(T, S, time, dist, Q, **kwargs):
     return (Q / (4.0 * np.pi * T)) * sps.exp1(u)
 
 
-def hunt99ddwn(T, S, time, l, Q, **kwargs):
+def hunt99ddwn(
+    T, S, time, dist, Q, streambed_conductance=0, x=0, y=0, **kwargs
+):
     """Function to calculate drawdown in an aquifer with a partially
         penetrating stream including streambed resistance (Hunt, 1999).
         Units are not specified, but should be consistent length and time.
@@ -77,8 +79,12 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         The solution becomes the Theis solution if streambed conductance
         is zero, and approaches an image-well solution from Theis or Glover
         and Balmer (1954) as streambed conductance gets very large.
-        Note that the well is located at the location x,y = (l, 0) and the stream
-        is aligned with y-axis at x=0
+        Note that the well is located at the location x,y = (l, 0)
+        and the stream is aligned with y-axis at x=0.
+
+        x and y locations provided are the points at which drawdown is
+        calculated and reported. It is possible to provide x and y
+        ndarrays generated with `numpy.meshgrid`.
 
         Hunt, B., 1999, Unsteady streamflow depletion from ground
         water pumping: Groundwater, v. 37, no. 1, pgs. 98-102,
@@ -93,16 +99,16 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         Storativity of aquifer [dimensionless]
     time: float, optionally np.array or list
         time at which to calculate results [T]
-    l: float
+    dist: float
         distance between well and stream in [L]
     Q : float
         pumping rate (+ is extraction) [L**3/T]
-    streambed: float
+    streambed_conductance: float
         streambed conductance [ft/d] (lambda in the paper)
-    x: float, optionally vector from numpy meshgrid giving grid of x,y locations
-        distance from stream, [ft]
-    y: float, optionally vector from numpy meshgrid giving grid of x,y locations
-        distance parallel to stream, well is located at y=0
+    x: float, optionally ndarray
+        x locations at which to report calculated drawdown.
+    y: float, optionally ndarray
+        y locations at which to report calculated drawdown.
     **kwargs:  included to all drawdown methods for extra values required
         in some calls
 
@@ -112,19 +118,7 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         single value, meshgrid of drawdowns, or np.array with shape
         (ntimes, meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes [L]
-
-
-
-    call signature is:
-        hunt99ddwn(T, S, time, l, Q, streambed=streambed_value, x=X, y=Y)
-
     """
-    if "streambed" in kwargs.keys():
-        streambed = kwargs["streambed"]
-    if "x" in kwargs.keys():
-        x = kwargs["x"]
-    if "y" in kwargs.keys():
-        y = kwargs["y"]
 
     # turn lists into np.array so they get handled correctly,
     # check if time or space is an array
@@ -142,10 +136,14 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
     # compute a single x, y point at a given time
     if timescalar and spacescalar:
         [strmintegral, err] = integrate.quad(
-            _ddwn2, 0.0, np.inf, args=(l, x, y, T, streambed, time, S)
+            _ddwn2,
+            0.0,
+            np.inf,
+            args=(dist, x, y, T, streambed_conductance, time, S),
         )
         return (Q / (4.0 * np.pi * T)) * (
-            _ddwn1(l, x, y, T, streambed, time, S) - strmintegral
+            _ddwn1(dist, x, y, T, streambed_conductance, time, S)
+            - strmintegral
         )
 
     # compute a vector of times for a given point
@@ -153,11 +151,17 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         drawdowns = []
         for tm in time:
             [strmintegral, err] = integrate.quad(
-                _ddwn2, 0.0, np.inf, args=(l, x, y, T, streambed, tm, S)
+                _ddwn2,
+                0.0,
+                np.inf,
+                args=(dist, x, y, T, streambed_conductance, tm, S),
             )
             drawdowns.append(
                 (Q / (4.0 * np.pi * T))
-                * (_ddwn1(l, x, y, T, streambed, tm, S) - strmintegral)
+                * (
+                    _ddwn1(dist, x, y, T, streambed_conductance, tm, S)
+                    - strmintegral
+                )
             )
         return drawdowns
 
@@ -181,7 +185,7 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
                             x[i, j],
                             y[i, j],
                             T,
-                            streambed,
+                            streambed_conductance,
                             time[time_idx],
                             S,
                         ),
@@ -192,7 +196,7 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
                             x[i, j],
                             y[i, j],
                             T,
-                            streambed,
+                            streambed_conductance,
                             time[time_idx],
                             S,
                         )
@@ -201,25 +205,25 @@ def hunt99ddwn(T, S, time, l, Q, **kwargs):
         return drawdowns
 
 
-def _ddwn1(l, x, y, T, streambed, time, S):
+def _ddwn1(dist, x, y, T, streambed, time, S):
     """Internal method to calculate Theis drawdown function for a point (x,y)
 
     Used in computing Hunt, 1999 estimate of drawdown.  Equation 30 from
     the paper.  Variables described in hunt99ddwn function.
     """
-    if isinstance(l, list):
-        l = np.array(l)
-    if isinstance(l, pd.Series):
-        l = l.values
+    if isinstance(dist, list):
+        dist = np.array(dist)
+    if isinstance(dist, pd.Series):
+        dist = dist.values
 
     isarray = False
-    if isinstance(l, np.ndarray):
+    if isinstance(dist, np.ndarray):
         isarray = True
 
     # construct the well function argument
     # if (l-x) is zero, then function does not exist
     # trap for (l-x)==0 and set to small value
-    dist = l - x
+    dist = dist - x
     if isarray:
         dist = np.where(dist == 0, 0.001, dist)
     else:
@@ -249,21 +253,22 @@ def _ddwn2(theta, l, x, y, T, streambed, time, S):
 
 def WardLoughDrawdown(
     T1,
-    T2,
     S1,
+    t,
+    dist,
+    Q,
+    T2,
     S2,
     width,
-    Q,
-    dist,
     streambed_thick,
     streambed_K,
     aquitard_thick,
     aquitard_K,
-    t,
     x,
     y,
     NSteh1=2,
     NSteh2=2,
+    **kwargs,
 ):
     """Compute drawdown using Ward and Lough (2011) solution
 
@@ -274,7 +279,7 @@ def WardLoughDrawdown(
         semi-confining aquitard layer.
 
         Ward, N.D.,and Lough, H., 2011, Stream depletion from pumping a
-        semiconfined aquifer in a two-layer leaky aquifer system (techical note):
+        semiconfined aquifer in a two-layer leaky aquifer system (technical note):
         Journal of Hydrologic Engineering ASCE, v. 16, no. 11, pgs. 955-959,
         https://doi.org/10.1061/(ASCE)HE.1943-5584.0000382.
 
@@ -292,7 +297,8 @@ def WardLoughDrawdown(
         (L in the original paper)
     Q: float
         pumping rate (+ is extraction) [L**3/T]
-
+    **kwargs:  included to all drawdown methods for extra values required
+        in some calls
     Returns
     -------
     ddwn float
@@ -383,14 +389,15 @@ def WardLoughDrawdown(
 
 # define stream depletion methods here
 def glover(T, S, time, dist, Q, **kwargs):
-    """Calculate Glover and Balmer (1954) solution for stream depletion
+    """
+    Calculate Glover and Balmer (1954) solution for stream depletion
 
-        Depletion solution for a well near a river where the river fully
-        penetrates the aquifer and there is no streambed resistance.
+    Depletion solution for a well near a river where the river fully
+    penetrates the aquifer and there is no streambed resistance.
 
-        Glover, R.E. and Balmer, G.G., 1954, River depletion from pumping
-        a well near a river, Eos Transactions of the American Geophysical Union,
-        v. 35, no. 3, pg. 468-470, https://doi.org/10.1029/TR035i003p00468.
+    Glover, R.E. and Balmer, G.G., 1954, River depletion from pumping
+    a well near a river, Eos Transactions of the American Geophysical Union,
+    v. 35, no. 3, pg. 468-470, https://doi.org/10.1029/TR035i003p00468.
 
     Parameters
     ----------
@@ -418,16 +425,17 @@ def glover(T, S, time, dist, Q, **kwargs):
 
 
 def sdf(T, S, dist, **kwargs):
-    """internal function for Stream Depletion Factor
+    """
+    internal function for Stream Depletion Factor
 
-        Stream Depletion Factor was defined by Jenkins (1968) and described
-        in Jenkins as the time when the volume of stream depletion is
-        28 percent of the net volume pumped from the well.
-        SDF = dist**2 * S/T.
+    Stream Depletion Factor was defined by Jenkins (1968) and described
+    in Jenkins as the time when the volume of stream depletion is
+    28 percent of the net volume pumped from the well.
+    SDF = dist**2 * S/T.
 
-        Jenkins, C.T., Computation of rate and volume of stream depletion
-        by wells: U.S. Geological Survey Techniques of Water-Resources
-        Investigations, Chapter D1, Book 4, https://pubs.usgs.gov/twri/twri4d1/.
+    Jenkins, C.T., Computation of rate and volume of stream depletion
+    by wells: U.S. Geological Survey Techniques of Water-Resources
+    Investigations, Chapter D1, Book 4, https://pubs.usgs.gov/twri/twri4d1/.
 
     Parameters
     ----------
@@ -450,15 +458,16 @@ def sdf(T, S, dist, **kwargs):
 
 
 def walton(T, S, time, dist, Q, **kwargs):
-    """Calculate depletion using Walton (1987) PT-8 BASIC program logic
+    """
+    Calculate depletion using Walton (1987) PT-8 BASIC program logic
 
-        Provides the Glover and Balmer (Jenkins) solution.
+    Provides the Glover and Balmer (Jenkins) solution.
 
-        Walton, W.C., Groundwater Pumping Tests:  Lewis Publishers, Chelsea,
-        Michigan, 201 p.
+    Walton, W.C., Groundwater Pumping Tests:  Lewis Publishers, Chelsea,
+    Michigan, 201 p.
 
-        Note that unlike the other depletion functions, this Walton function
-        is unit-specific, using feet and days as dimensions.
+    Note that unlike the other depletion functions, this Walton function
+    is unit-specific, using feet and days as dimensions.
 
     Parameters
     ----------
@@ -500,7 +509,7 @@ def walton(T, S, time, dist, Q, **kwargs):
     return ret_vals
 
 
-def hunt99(T, S, time, dist, Q, streambed, **kwargs):
+def hunt99(T, S, time, dist, Q, streambed_conductance, **kwargs):
     """Function for Hunt (1999) solution for streamflow depletion by a pumping well.
 
         Computes streamflow depletion by a pumping well for a partially penetrating
@@ -532,11 +541,10 @@ def hunt99(T, S, time, dist, Q, streambed, **kwargs):
 
     Other Parameters
     ----------------
-    streambed: float
-        streambed conductance [ft/d] (lambda in the paper)
+    streambed_conductance: float
+        streambed_conductance conductance [L/T] (lambda in the paper)
     """
-    if "streambed" in kwargs.keys():
-        streambed = kwargs["streambed"]
+
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
@@ -549,8 +557,8 @@ def hunt99(T, S, time, dist, Q, streambed, **kwargs):
         dist = np.array(dist)
 
     a = np.sqrt(S * dist**2 / (4.0 * T * time))
-    b = (streambed**2 * time) / (4 * S * T)
-    c = (streambed * dist) / (2.0 * T)
+    b = (streambed_conductance**2 * time) / (4 * S * T)
+    c = (streambed_conductance * dist) / (2.0 * T)
     # Qs/Q = erfc(a) - exp(b+c)*erfc(sqrt(b) + a)
     # in order to calculate exp(x)erfc(y)
     # as values get big. Use numpy special erfcx(),
@@ -568,7 +576,18 @@ def hunt99(T, S, time, dist, Q, streambed, **kwargs):
 
 
 def hunt2003(
-    T, S, time, dist, Q, Bprime, Bdouble, K, sigma, width, streambed, **kwargs
+    T,
+    S,
+    time,
+    dist,
+    Q,
+    Bprime,
+    Bdouble,
+    aquitard_K,
+    sigma,
+    width,
+    streambed_conductance,
+    **kwargs,
 ):
     """Function for Hunt (2003) solution for streamflow depletion by a pumping well.
 
@@ -608,13 +627,13 @@ def hunt2003(
     Bdouble: float
         distance from bottom of stream to bottom of semiconfining layer,
         [L] (aquitard thickness beneath the stream)
-    K: float
+    aquitard_K: float
         hydraulic conductivity of semiconfining layer [L/T]
     sigma: float
         porosity of semiconfining layer
     width: float
         stream width (b in paper) [T]
-    streambed: float
+    streambed_conductance: float
         streambed conductance [L/T] (lambda in the paper),
         only used if K is less than 1e-10
     """
@@ -634,13 +653,13 @@ def hunt2003(
 
     # if K is really small, set streambed conductance to a value
     # so solution collapses to Hunt 1999 (confined aquifer solution)
-    if K < 1.0e-10:
-        lam = streambed
+    if aquitard_K < 1.0e-10:
+        lam = streambed_conductance
     else:
-        lam = K * width / Bdouble
+        lam = aquitard_K * width / Bdouble
     dlam = lam * dist / T
     epsilon = S / sigma
-    dK = (K / Bprime) * np.power(dist, 2) / T
+    dK = (aquitard_K / Bprime) * np.power(dist, 2) / T
 
     # numerical integration of F() and G() functions to
     # get correction to Hunt(1999) estimate of streamflow depletion
@@ -835,33 +854,35 @@ def _WardLoughNonDimensionalize(
 
 def WardLoughDepletion(
     T1,
-    T2,
     S1,
+    t,
+    dist,
+    Q,
+    T2,
     S2,
     width,
-    Q,
-    dist,
     streambed_thick,
     streambed_K,
     aquitard_thick,
     aquitard_K,
-    t,
     x=0,
     y=0,
     NSteh1=2,
+    **kwargs,
 ):
-    """Compute streamflow depletion using Ward and Lough (2011) solution
+    """
+    Compute streamflow depletion using Ward and Lough (2011) solution
 
-        Ward and Lough (2011) presented a solution for streamflow depletion
-        by a pumping well in a layered aquifer system.  The stream
-        is in the upper aquifer, and the pumping well is in a lower
-        aquifer that is separated from the upper aquifer by a
-        semi-confining aquitard layer.
+    Ward and Lough (2011) presented a solution for streamflow depletion
+    by a pumping well in a layered aquifer system.  The stream
+    is in the upper aquifer, and the pumping well is in a lower
+    aquifer that is separated from the upper aquifer by a
+    semi-confining aquitard layer.
 
-        Ward, N.D.,and Lough, H., 2011, Stream depletion from pumping a
-        semiconfined aquifer in a two-layer leaky aquifer system (techical note):
-        Journal of Hydrologic Engineering ASCE, v. 16, no. 11, pgs. 955-959,
-        https://doi.org/10.1061/(ASCE)HE.1943-5584.0000382.
+    Ward, N.D.,and Lough, H., 2011, Stream depletion from pumping a
+    semiconfined aquifer in a two-layer leaky aquifer system (techical note):
+    Journal of Hydrologic Engineering ASCE, v. 16, no. 11, pgs. 955-959,
+    https://doi.org/10.1061/(ASCE)HE.1943-5584.0000382.
 
     Parameters
     ----------
@@ -875,7 +896,7 @@ def WardLoughDepletion(
         distance at which to calculate results in [L]
     Q: float
         pumping rate (+ is extraction) [L**3/T]
-     **kwargs: included to all depletion methods for extra values required in some calls
+    **kwargs: included to all depletion methods for extra values required in some calls
 
 
     Returns
