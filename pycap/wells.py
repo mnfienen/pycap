@@ -38,25 +38,30 @@ class WellResponse:
         response_type: string
             reserved for future implementation
         T: float
-            Aquifer Transmissivity
+            Aquifer Transmissivity [L**2/T]
         S: float
-            Aquifer Storage
+            Aquifer Storage [unitless]
         dist: float
-            Distance between well and response
+            Distance between well and response [L]
         Q: pandas series
-            Pumping rate changes and times
-        stream_apportionment: string
-                ([type], optional): [description]. Defaults to None.
-        dd_method: string
-            [description]. Defaults to 'Theis'.
-        depl_method:string
-            (str, optional): [description]. Defaults to 'Glover'.
-        theis_time: integer
-            (int, optional): [description]. Defaults to -9999.
-        depl_pump_time: integer
-            (int, optional): [description]. Defaults to -99999.
+            Pumping rate changes and times [L**3/T]
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
+        dd_method: string, optional
+            Method to be used for drawdown calculations. Defaults to 'Theis'.
+        depl_method: string, optional
+            Method to be used for depletion calculations. Defaults to 'Glover'.
+        theis_time: integer, optional
+            Time at which drawdown calculation should be made [T].
+            Defaults to -9999.
+        depl_pump_time: integer, optional
+            Length of time per year that pumping should be simulated for depletion
+            calculations [T]. Not used if pumping time series is used.
+            Defaults to -99999.
         streambed_conductance: float
-            Streambed conductance for the Hunt99 depletion method. Defaults to None
+            Streambed conductance for the Hunt99 depletion method [L/T].
+            Defaults to None
 
         """
         self._drawdown = None
@@ -179,32 +184,40 @@ class Well:
         depl_method="walton",
         streambed_conductance=None,
     ) -> None:
-        """[summary]
+        """
+        Object to evaluate a pending (or existing,
+        or a couple other possibilities) well with all relevant impacts.
+        Preprocessing makes unit conversions and calculates distances as needed
 
         Parameters
         ----------
         T: float
-            Aquifer Transmissivity
+            Aquifer Transmissivity [L**2/T]
         S: float
-            Aquifer Storage
+            Aquifer Storage [unitless]
         Q: pandas series
-            Pumping rate changes and times
-        depletion_years: int
-            [description]. Defaults to 4.
+            Pumping rate changes and times [L**3/T]
+        depletion_years: int, optional
+            Number of years over which to calculate depletion. Defaults to 4.
         theis_dd_days: int
-            [description]. Defaults to -9999.
-        depl_pump_time: int
-            [description]. Defaults to -9999.
-        stream_dist: float
-            [description]. Defaults to None.
+            Number of days at which drawdown is calculated. Defaults to -9999.
+        depl_pump_time: integer, optional
+            Length of time per year that pumping should be simulated for depletion
+            calculations [T]. Not used if pumping time series is used.
+            Defaults to -99999.
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
         drawdown_dist: float
-            [description]. Defaults to None.
-        stream_apportionment: type
-            [description]. Defaults to None.
-        depl_method: string
-            description]. Defaults to walton
-        streambed_conductance: dict
-            dictionary of streambed conductances. Defaults to None
+            Distance between well and drawdown calculation location. [L]
+        stream_apportionment: dict of floats
+                Dictionary with stream responses and fraction of depletion
+                attributed to each. Defaults to None.
+        depl_method: string, optional
+            Method to be used for depletion calculations. Defaults to 'Glover'.
+        streambed_conductance: float
+            Streambed conductance for the Hunt99 depletion method [L/T].
+            Defaults to None
         """
 
         # placeholders for values returned with @property decorators
