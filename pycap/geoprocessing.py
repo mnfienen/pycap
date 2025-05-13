@@ -63,13 +63,13 @@ class Geoprocess:
         Methods
         -------
         get_home(self, Well or lat/long): returns geopandas dataframe
-             polygon for catchment containing a passed Well object, geopandas
-             dataframe, or (lat/long) location - usually called by get_geometries
+            polygon for catchment containing a passed Well object, geopandas
+            dataframe, or (lat/long) location - usually called by get_geometries
 
         get_neighbors(self, Well or lat/long or gpd): returns geopandas dataframe
-             of polygons for catchments neighboring a home catchment given
-             either a geopandas dataframe with the home catchment, a Well
-             object, an (lat/long) location - usually called by get_geometries
+            of polygons for catchments neighboring a home catchment given
+            either a geopandas dataframe with the home catchment, a Well
+            object, an (lat/long) location - usually called by get_geometries
 
         get_geometries(self, gpd): returns two geopandas dataframes
 
