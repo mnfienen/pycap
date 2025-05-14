@@ -244,6 +244,7 @@ def project_spreadsheet_results():
 
 
 def test_project_spreadsheet(project_spreadsheet_results):
+    import pycap
     from pycap.wells import Well
 
     pars = project_spreadsheet_results
@@ -251,7 +252,7 @@ def test_project_spreadsheet(project_spreadsheet_results):
     well1 = Well(
         T=pars["T"],
         S=pars["S"],
-        Q=Q2ts(pars["depl_pump_time"], 5, pars["Q1_gpm"]),
+        Q=Q2ts(pars["depl_pump_time"], 5, pars["Q1_gpm"]) * pycap.GPM2CFD,
         depletion_years=5,
         theis_dd_days=pars["theis_p_time"],
         depl_pump_time=pars["depl_pump_time"],
@@ -268,7 +269,7 @@ def test_project_spreadsheet(project_spreadsheet_results):
     well2 = Well(
         T=pars["T"],
         S=pars["S"],
-        Q=Q2ts(pars["depl_pump_time"], 5, pars["Q2_gpm"]),
+        Q=Q2ts(pars["depl_pump_time"], 5, pars["Q2_gpm"]) * pycap.GPM2CFD,
         depletion_years=5,
         theis_dd_days=pars["theis_p_time"],
         depl_pump_time=pars["depl_pump_time"],
@@ -796,7 +797,6 @@ def test_complex_well(ward_lough_test_data):
     allpars["stream_dist"] = {"resp1": allpars["dist"]}
 
     allpars["stream_apportionment"] = {"resp1": 1.0}
-    allpars["Q"] /= GPM2CFD
     allpars["Q"] = pd.Series(
         index=range(1, 102), data=[0] + [allpars["Q"]] * 100
     )

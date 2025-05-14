@@ -381,9 +381,11 @@ class Project:
             if self.ts is True:
                 Q = self.Q_ts[ck] * GPM2CFD
             else:
-                Q = Q2ts(
-                    cw["pumping_days"], int(cw["depletion_years"]), cw["Q"]
-                )
+                Q = (
+                    Q2ts(
+                        cw["pumping_days"], int(cw["depletion_years"]), cw["Q"]
+                    )
+                ) * GPM2CFD
             if np.isinf(self.ts_len):
                 self.ts_len = len(Q)
             self.wells[ck] = Well(
