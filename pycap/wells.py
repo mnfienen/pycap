@@ -28,6 +28,18 @@ class WellResponse:
         theis_time=-9999,
         depl_pump_time=-99999,
         streambed_conductance=None,
+        Bprime=None,
+        Bdouble=None,
+        sigma=None,
+        width=None,
+        T2=None,
+        S2=None,
+        streambed_thick=None,
+        streambed_K=None,
+        aquitard_thick=None,
+        aquitard_K=None,
+        x=None,
+        y=None,
     ) -> None:
         """Class to calculate a single response for a single pumping well.
 
@@ -63,6 +75,38 @@ class WellResponse:
             Streambed conductance for the Hunt99 depletion method [L/T].
             Defaults to None
 
+        Additional Parameters Used by Hunt and Ward/Lough Solutions
+        -----------------------------------------------------------
+        Bprime: float
+            saturated thickness of semiconfining layer containing stream, [L]
+        Bdouble: float
+            distance from bottom of stream to bottom of semiconfining layer,
+            [L] (aquitard thickness beneath the stream)
+        aquitard_K: float
+            hydraulic conductivity of semiconfining layer [L/T]
+        sigma: float
+            porosity of semiconfining layer
+        width: float
+            stream width [T]
+        x: float
+            x-coordinate of drawdown location
+            (with origin being x=0 at stream location) [L]
+        y: float
+            y-coordinate of drawdown location
+            (with origin being y=0 at pumping well location) [L]
+
+        Additional Parameters Used by Ward/Lough Solutions
+        --------------------------------------------------
+        T2: float
+            Transmissivity of deeper system
+        S2: float
+            Storativity of
+        streambed_thick: float
+            thickness of streambed
+        streambed_K: float
+            hydraulic conductivity of streambed, [L/T]
+        aquitard_thick: float
+            thickness of intervening leaky aquitard, [L]
         """
         self._drawdown = None
         self._depletion = None
@@ -81,19 +125,48 @@ class WellResponse:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
+        self.Bprime = Bprime
+        self.Bdouble = Bdouble
+        self.sigma = sigma
+        self.width = width
+        self.T2 = T2
+        self.S2 = S2
+        self.streambed_thick = streambed_thick
+        self.streambed_K = streambed_K
+        self.aquitard_thick = aquitard_thick
+        self.aquitard_K = aquitard_K
+        self.x = x
+        self.y = y
 
     def _calc_drawdown(self):
         """calculate drawdown at requested distance and
         time using solution given as attribute to the object"""
         dd_f = pycap.ALL_DD_METHODS[self.dd_method.lower()]
         # start with zero drawdown
-        dd = np.zeros(len(self.Q))
+        if "lough" not in self.dd_method.lower():
+            dd = np.zeros(len(self.Q))
+        else:
+            dd = np.zeros((len(self.Q), 2))
         deltaQ = pycap._calc_deltaQ(self.Q.copy())
         # initialize with pumping at the first time being positive
         idx = deltaQ.index[0] - 1
         cQ = deltaQ.iloc[0]
         ct = list(range(idx, len(self.Q)))
-        extra_args = {}
+        extra_args = {
+            "streambed_conductance": self.streambed_conductance,
+            "Bprime": self.Bprime,
+            "Bdouble": self.Bdouble,
+            "sigma": self.sigma,
+            "width": self.width,
+            "T2": self.T2,
+            "S2": self.S2,
+            "streambed_thick": self.streambed_thick,
+            "streambed_K": self.streambed_K,
+            "aquitard_thick": self.aquitard_thick,
+            "aquitard_K": self.aquitard_K,
+            "x": self.x,
+            "y": self.y,
+        }
         dd[idx:] = dd_f(self.T, self.S, ct, self.dist, cQ, **extra_args)
         if len(deltaQ) > 1:
             deltaQ = deltaQ.iloc[1:]
@@ -125,10 +198,21 @@ class WellResponse:
             T = self.T_gpd_ft
         else:
             T = self.T
-        if self.depl_method.lower() == "hunt99":
-            extra_args = {"streambed": self.streambed_conductance}
-        else:
-            extra_args = {}
+        extra_args = {
+            "streambed_conductance": self.streambed_conductance,
+            "Bprime": self.Bprime,
+            "Bdouble": self.Bdouble,
+            "sigma": self.sigma,
+            "width": self.width,
+            "T2": self.T2,
+            "S2": self.S2,
+            "streambed_thick": self.streambed_thick,
+            "streambed_K": self.streambed_K,
+            "aquitard_thick": self.aquitard_thick,
+            "aquitard_K": self.aquitard_K,
+            "x": self.x,
+            "y": self.y,
+        }
         depl[idx:] = depl_f(
             T,
             self.S,
@@ -182,7 +266,20 @@ class Well:
         drawdown_dist=None,
         stream_apportionment=None,
         depl_method="walton",
+        drawdown_method="theis",
         streambed_conductance=None,
+        Bprime=None,
+        Bdouble=None,
+        sigma=None,
+        width=None,
+        T2=None,
+        S2=None,
+        streambed_thick=None,
+        streambed_K=None,
+        aquitard_thick=None,
+        aquitard_K=None,
+        x=None,
+        y=None,
     ) -> None:
         """
         Object to evaluate a pending (or existing,
@@ -215,9 +312,44 @@ class Well:
                 attributed to each. Defaults to None.
         depl_method: string, optional
             Method to be used for depletion calculations. Defaults to 'Glover'.
+        drawdown_method: string, optional
+            Method to be used for drawdown calculations. Defaults to 'Theis'.
         streambed_conductance: float
             Streambed conductance for the Hunt99 depletion method [L/T].
             Defaults to None
+
+        Additional Parameters Used by Hunt and Ward/Lough Solutions
+        -----------------------------------------------------------
+        Bprime: float
+            saturated thickness of semiconfining layer containing stream, [L]
+        Bdouble: float
+            distance from bottom of stream to bottom of semiconfining layer,
+            [L] (aquitard thickness beneath the stream)
+        aquitard_K: float
+            hydraulic conductivity of semiconfining layer [L/T]
+        sigma: float
+            porosity of semiconfining layer
+        width: float
+            stream width [T]
+        x: float
+            x-coordinate of drawdown location
+            (with origin being x=0 at stream location) [L]
+        y: float
+            y-coordinate of drawdown location
+            (with origin being y=0 at pumping well location) [L]
+
+        Additional Parameters Used by Ward/Lough Solutions
+        --------------------------------------------------
+        T2: float
+            Transmissivity of deeper system
+        S2: float
+            Storativity of
+        streambed_thick: float
+            thickness of streambed
+        streambed_K: float
+            hydraulic conductivity of streambed, [L/T]
+        aquitard_thick: float
+            thickness of intervening leaky aquitard, [L]
         """
 
         # placeholders for values returned with @property decorators
@@ -225,6 +357,7 @@ class Well:
         self._drawdown = None
         self._max_depletion = None
         self.depl_method = depl_method
+        self.drawdown_method = drawdown_method
         self.stream_dist = stream_dist
         self.drawdown_dist = drawdown_dist
         self.T = T
@@ -235,6 +368,18 @@ class Well:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
+        self.Bprime = Bprime
+        self.Bdouble = Bdouble
+        self.sigma = sigma
+        self.width = width
+        self.T2 = T2
+        self.S2 = S2
+        self.streambed_thick = streambed_thick
+        self.streambed_K = streambed_K
+        self.aquitard_thick = aquitard_thick
+        self.aquitard_K = aquitard_K
+        self.x = x
+        self.y = y
         self.stream_responses = {}  # dict of WellResponse objects
         # for this well with streams
         self.drawdown_responses = {}  # dict of WellResponse objects
@@ -268,6 +413,20 @@ class Well:
 
         # now make all the WellResponse objects
         # first for streams
+        extra_args = {
+            "Bprime": self.Bprime,
+            "Bdouble": self.Bdouble,
+            "sigma": self.sigma,
+            "width": self.width,
+            "T2": self.T2,
+            "S2": self.S2,
+            "streambed_thick": self.streambed_thick,
+            "streambed_K": self.streambed_K,
+            "aquitard_thick": self.aquitard_thick,
+            "aquitard_K": self.aquitard_K,
+            "x": self.x,
+            "y": self.y,
+        }
         if self.stream_dist is not None:
             for cs, (cname, cdist) in enumerate(self.stream_dist.items()):
                 if self.streambed_conductance is not None:
@@ -287,6 +446,7 @@ class Well:
                     stream_apportionment=self.stream_apportionment[cname],
                     depl_method=self.depl_method,
                     streambed_conductance=streambed_conductance_current,
+                    **extra_args,
                 )
 
         # next for drawdown responses
@@ -300,7 +460,8 @@ class Well:
                     dist=cdist,
                     theis_time=self.theis_dd_days,
                     Q=self.Q,
-                    dd_method="theis",
+                    dd_method=self.drawdown_method,
+                    **extra_args,
                 )
 
     @property
@@ -322,6 +483,6 @@ class Well:
     @property
     def max_depletion(self):
         return {
-            cwob.name: np.max(cwob.depletion)
+            cwob.name: np.nanmax(cwob.depletion)
             for _, cwob in self.stream_responses.items()
         }

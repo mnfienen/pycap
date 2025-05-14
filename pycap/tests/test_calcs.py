@@ -57,12 +57,27 @@ def ward_lough_test_data():
     s2_test = pd.read_csv(datapath / "s2_test.csv", index_col=0)
     dQ1_test = pd.read_csv(datapath / "dQ1_test.csv", index_col=0)
     dQ2_test = pd.read_csv(datapath / "dQ2_test.csv", index_col=0)
-
+    params = {
+        "T1": 100,
+        "T2": 100,
+        "S1": 1000,
+        "S2": 1,
+        "width": 1,
+        "Q": 125,
+        "dist": 100,
+        "streambed_thick": 10,
+        "streambed_K": 1,
+        "aquitard_thick": 10,
+        "aquitard_K": 0.01,
+        "x": 50,
+        "y": 100,
+    }
     return {
         "s1_test": s1_test,
         "s2_test": s2_test,
         "dQ1_test": dQ1_test,
         "dQ2_test": dQ2_test,
+        "params": params,
     }
 
 
@@ -347,6 +362,12 @@ def test_sdf():
     assert np.allclose(sdf, 520, atol=1.5)
 
 
+# def test_well():
+#     from pycap import wells
+#     w = wells.Well('pending',
+#                    )
+
+
 def test_walton(walton_results):
     """Test of a single year to be sure the Walton calculations are made correctly
 
@@ -525,7 +546,7 @@ def test_hunt99_results():
         10000.0  # large lambda value should return Glover and Balmer solution
     )
     # see test_glover for these values.
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed=rlambda)
+    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
     assert all(np.isnan(Qs) == False)
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
@@ -535,7 +556,7 @@ def test_hunt99_results():
     sdf = dist**2 * S / T
     time = [sdf * 1.0, sdf * 2.0, sdf * 6.0]
     obs = [0.480, 0.617, 0.773]
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed=rlambda)
+    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
     assert all(np.isnan(Qs) == False)
     assert np.allclose(Qs, obs, atol=5e-3)
 
@@ -549,7 +570,7 @@ def test_hunt99_results():
     time = [10.0, 20.0, 28.0]
     rlambda = 20
     obs = np.array([0.1055, 0.1942, 0.2378]) / 0.5570
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed=rlambda)
+    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
     assert all(np.isnan(Qs) == False)
     assert np.allclose(Qs, obs, atol=5e-3)
 
@@ -622,11 +643,15 @@ def test_geoprocessing(SIR2009_5003_Table2_Batch_results):
     Q = well_temp.loc[0, "rate"] * 0.0022280093
     T = home.loc[11967, "MEDIAN_T"]
     S = 0.01
-    streambed = home.loc[11967, "EST_Kv_W"] / well_temp.loc[0, "depth"]
+    streambed_conductance = (
+        home.loc[11967, "EST_Kv_W"] / well_temp.loc[0, "depth"]
+    )
 
     # hunt99 returns CFS need to convert to GPM for table
     nearest["analytical_removal"] = nearest["distance"].apply(
-        lambda dist: pycap.hunt99(T, S, time, dist, Q, streambed=streambed)
+        lambda dist: pycap.hunt99(
+            T, S, time, dist, Q, streambed_conductance=streambed_conductance
+        )
         * 448.83116885
     )
     nearest["valley_seg_removal"] = (
@@ -687,7 +712,7 @@ def test_hunt99ddwn():
     well.py module.
     """
     Q = 1
-    l = 200.0
+    dist = 200.0
     T = 1000.0
     S = 0.1
     time = 28.0
@@ -697,8 +722,8 @@ def test_hunt99ddwn():
     x = 50.0
     y = 0.0
 
-    ddwn = pycap.hunt99ddwn(T, S, time, l, Q, streambed=rlambda, x=x, y=y)
-    no_stream = pycap.theis(T, S, time, (l - x), Q)
+    ddwn = pycap.hunt99ddwn(T, S, time, dist, Q, streambed=rlambda, x=x, y=y)
+    no_stream = pycap.theis(T, S, time, (dist - x), Q)
     assert ddwn == no_stream
 
 
@@ -721,111 +746,76 @@ def test_transient_dd():
 def test_ward_lough_depletion(ward_lough_test_data):
     # note: the parameters defined below are intended to result in the nondimensional
     # parameters corresponding with Fig. 6 in DOI: 10.1061/ (ASCE)HE.1943-5584.0000382.
-
-    T1 = 100
-    T2 = 100
-    S1 = 1000
-    S2 = 1
-    width = 1
-    Q = 125
-    dist = 100
-    streambed_thick = 10
-    streambed_K = 1
-    aquitard_thick = 1
-    aquitard_K = 0.01
-    x = 50
-    y = 100
+    allpars = ward_lough_test_data["params"]
+    allpars["aquitard_thick"] = 1
     dQ1_test = ward_lough_test_data["dQ1_test"]
     dQ2_test = ward_lough_test_data["dQ2_test"]
-    dQ2_test["mod"] = pycap.WardLoughDepletion(
-        T1,
-        T2,
-        S1,
-        S2,
-        width,
-        Q,
-        dist,
-        streambed_thick,
-        streambed_K,
-        aquitard_thick,
-        aquitard_K,
-        dQ2_test.index * 100,
-        x,
-        y,
+    allpars["t"] = dQ2_test.index * 100
+    dQ2_test["mod"] = pycap.WardLoughDepletion(**allpars)
+    allpars["t"] = dQ1_test.index * 100
+    allpars["T1"] = 0.01
+    allpars["aquitard_K"] = 0.001
+    dQ1_test["mod"] = pycap.WardLoughDepletion(**allpars)
+    assert np.allclose(
+        dQ1_test["mod"] / allpars["Q"], dQ1_test["dQ"], atol=0.1
     )
-    T1 = 0.01
-    aquitard_K = 0.001
-    dQ1_test["mod"] = pycap.WardLoughDepletion(
-        T1,
-        T2,
-        S1,
-        S2,
-        width,
-        Q,
-        dist,
-        streambed_thick,
-        streambed_K,
-        aquitard_thick,
-        aquitard_K,
-        dQ1_test.index * 100,
-        x,
-        y,
+
+    assert np.allclose(
+        dQ2_test["mod"] / allpars["Q"], dQ2_test["dQ"], atol=0.1
     )
-    assert np.allclose(dQ1_test["mod"] / Q, dQ1_test["dQ"], atol=0.1)
-    assert np.allclose(dQ2_test["mod"] / Q, dQ2_test["dQ"], atol=0.1)
 
 
 def test_ward_lough_drawdown(ward_lough_test_data):
     # note: the parameters defined below are intended to result in the nondimensional
     # parameters corresponding with Fig. 3 in DOI: 10.1061/ (ASCE)HE.1943-5584.0000382.
-    T1 = 100
-    T2 = 100
-    S1 = 1000
-    S2 = 1
-    width = 1
-    Q = 125
-    dist = 100
-    streambed_thick = 10
-    streambed_K = 1
-    aquitard_thick = 10
-    aquitard_K = 0.01
-    x = 50
-    y = 100
+    allpars = ward_lough_test_data["params"]
     s1_test = ward_lough_test_data["s1_test"]
     s2_test = ward_lough_test_data["s2_test"]
-
-    s1_test["mod"], _ = pycap.WardLoughDrawdown(
-        T1,
-        T2,
-        S1,
-        S2,
-        width,
-        Q,
-        dist,
-        streambed_thick,
-        streambed_K,
-        aquitard_thick,
-        aquitard_K,
-        s1_test.index * 100,
-        x,
-        y,
+    allpars["t"] = s1_test.index * 100
+    s1_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 0]
+    allpars["t"] = s2_test.index * 100
+    s2_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 1]
+    assert np.allclose(
+        s1_test["mod"] * allpars["T2"] / allpars["Q"], s1_test["s"], atol=0.035
     )
-    _, s2_test["mod"] = pycap.WardLoughDrawdown(
-        T1,
-        T2,
-        S1,
-        S2,
-        width,
-        Q,
-        dist,
-        streambed_thick,
-        streambed_K,
-        aquitard_thick,
-        aquitard_K,
-        s2_test.index * 100,
-        x,
-        y,
+    assert np.allclose(
+        s2_test["mod"] * allpars["T2"] / allpars["Q"], s2_test["s"], atol=0.035
     )
 
-    assert np.allclose(s1_test["mod"] * T2 / Q, s1_test["s"], atol=0.035)
-    assert np.allclose(s2_test["mod"] * T2 / Q, s2_test["s"], atol=0.035)
+
+def test_complex_well(ward_lough_test_data):
+    from pycap.solutions import GPM2CFD
+    from pycap.utilities import Q2ts
+    from pycap.wells import Well
+
+    allpars = ward_lough_test_data["params"]
+    allpars["T"] = allpars["T1"]
+    allpars["S"] = allpars["S1"]
+    allpars["stream_dist"] = None
+    allpars["drawdown_dist"] = {"dd1": 100}
+    allpars["stream_dist"] = {"resp1": allpars["dist"]}
+
+    allpars["stream_apportionment"] = {"resp1": 1.0}
+    allpars["Q"] /= GPM2CFD
+    allpars["Q"] = pd.Series(
+        index=range(1, 102), data=[0] + [allpars["Q"]] * 100
+    )
+    allpars.pop("T1")
+    allpars.pop("S1")
+    allpars.pop("dist")
+
+    w = Well(
+        "newwell",
+        depl_method="wardlough",
+        drawdown_method="wardloughddwn",
+        **allpars,
+    )
+
+    depl = w.depletion
+    assert len(depl) > 0
+
+    ddn = w.drawdown
+    assert len(ddn) > 0
+
+    maxdep = w.max_depletion
+    assert len(maxdep) > 0
