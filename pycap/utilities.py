@@ -25,12 +25,9 @@ def Q2ts(depl_pump_time, depletion_years, Q_scalar):
     """
     y1 = np.zeros(365)
     y1[:depl_pump_time] = Q_scalar
-    Q = (
-        pd.Series(
-            index=range(1, (depletion_years * 365) + 1),
-            data=list(y1) * depletion_years,
-        )
-        * GPM2CFD
+    Q = pd.Series(
+        index=range(1, (depletion_years * 365) + 1),
+        data=list(y1) * depletion_years,
     )
     return Q
 
