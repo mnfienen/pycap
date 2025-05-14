@@ -784,6 +784,8 @@ def test_ward_lough_drawdown(ward_lough_test_data):
 
 
 def test_complex_well(ward_lough_test_data):
+    from pycap.solutions import GPM2CFD
+    from pycap.utilities import Q2ts
     from pycap.wells import Well
 
     allpars = ward_lough_test_data["params"]
@@ -791,11 +793,17 @@ def test_complex_well(ward_lough_test_data):
     allpars["S"] = allpars["S1"]
     allpars["stream_dist"] = None
     allpars["drawdown_dist"] = None
-
+    allpars["stream_dist"] = {"resp1": allpars["dist"]}
+    allpars["stream_apportionment"] = {"resp1": 1.0}
+    allpars["Q"] /= GPM2CFD
+    allpars["Q"] = pd.Series(
+        index=range(1, 102), data=[0] + [allpars["Q"]] * 100
+    )
     allpars.pop("T1")
     allpars.pop("S1")
     allpars.pop("dist")
 
     w = Well("newwell", depl_method="wardlough", **allpars)
 
-    w
+    depl = w.depletion
+    assert len(depl) > 0

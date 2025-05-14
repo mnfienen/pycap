@@ -842,8 +842,11 @@ def _WardLoughNonDimensionalize(
     y,
 ):
     """Internal function to make non-dimensional groups for Ward and Lough solution"""
-    x /= dist
-    y /= dist
+    t = np.array(t)  # make sure not passing a list
+    if x is not None:
+        x /= dist
+    if y is not None:
+        y /= dist
     t = t * T2 / (S2 * (dist**2))
     T1 /= T2
     S1 /= S2

@@ -125,17 +125,17 @@ class WellResponse:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
-        self.Bprime = (Bprime,)
-        self.Bdouble = (Bdouble,)
-        self.sigma = (sigma,)
-        self.width = (width,)
-        self.T2 = (T2,)
-        self.S2 = (S2,)
-        self.streambed_thick = (streambed_thick,)
-        self.streambed_K = (streambed_K,)
-        self.aquitard_thick = (aquitard_thick,)
-        self.aquitard_K = (aquitard_K,)
-        self.x = (x,)
+        self.Bprime = Bprime
+        self.Bdouble = Bdouble
+        self.sigma = sigma
+        self.width = width
+        self.T2 = T2
+        self.S2 = S2
+        self.streambed_thick = streambed_thick
+        self.streambed_K = streambed_K
+        self.aquitard_thick = aquitard_thick
+        self.aquitard_K = aquitard_K
+        self.x = x
         self.y = y
 
     def _calc_drawdown(self):
@@ -365,17 +365,17 @@ class Well:
         self.Q = Q
         self.stream_apportionment = stream_apportionment
         self.streambed_conductance = streambed_conductance
-        self.Bprime = (Bprime,)
-        self.Bdouble = (Bdouble,)
-        self.sigma = (sigma,)
-        self.width = (width,)
-        self.T2 = (T2,)
-        self.S2 = (S2,)
-        self.streambed_thick = (streambed_thick,)
-        self.streambed_K = (streambed_K,)
-        self.aquitard_thick = (aquitard_thick,)
-        self.aquitard_K = (aquitard_K,)
-        self.x = (x,)
+        self.Bprime = Bprime
+        self.Bdouble = Bdouble
+        self.sigma = sigma
+        self.width = width
+        self.T2 = T2
+        self.S2 = S2
+        self.streambed_thick = streambed_thick
+        self.streambed_K = streambed_K
+        self.aquitard_thick = aquitard_thick
+        self.aquitard_K = aquitard_K
+        self.x = x
         self.y = y
         self.stream_responses = {}  # dict of WellResponse objects
         # for this well with streams
@@ -410,6 +410,20 @@ class Well:
 
         # now make all the WellResponse objects
         # first for streams
+        extra_args = {
+            "Bprime": self.Bprime,
+            "Bdouble": self.Bdouble,
+            "sigma": self.sigma,
+            "width": self.width,
+            "T2": self.T2,
+            "S2": self.S2,
+            "streambed_thick": self.streambed_thick,
+            "streambed_K": self.streambed_K,
+            "aquitard_thick": self.aquitard_thick,
+            "aquitard_K": self.aquitard_K,
+            "x": self.x,
+            "y": self.y,
+        }
         if self.stream_dist is not None:
             for cs, (cname, cdist) in enumerate(self.stream_dist.items()):
                 if self.streambed_conductance is not None:
@@ -429,6 +443,7 @@ class Well:
                     stream_apportionment=self.stream_apportionment[cname],
                     depl_method=self.depl_method,
                     streambed_conductance=streambed_conductance_current,
+                    **extra_args,
                 )
 
         # next for drawdown responses
@@ -443,6 +458,7 @@ class Well:
                     theis_time=self.theis_dd_days,
                     Q=self.Q,
                     dd_method=self.drawdown_method,
+                    **extra_args,
                 )
 
     @property
