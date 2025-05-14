@@ -143,7 +143,10 @@ class WellResponse:
         time using solution given as attribute to the object"""
         dd_f = pycap.ALL_DD_METHODS[self.dd_method.lower()]
         # start with zero drawdown
-        dd = np.zeros(len(self.Q))
+        if "lough" not in self.dd_method.lower():
+            dd = np.zeros(len(self.Q))
+        else:
+            dd = np.zeros((len(self.Q), 2))
         deltaQ = pycap._calc_deltaQ(self.Q.copy())
         # initialize with pumping at the first time being positive
         idx = deltaQ.index[0] - 1
@@ -480,6 +483,6 @@ class Well:
     @property
     def max_depletion(self):
         return {
-            cwob.name: np.max(cwob.depletion)
+            cwob.name: np.nanmax(cwob.depletion)
             for _, cwob in self.stream_responses.items()
         }

@@ -301,8 +301,10 @@ def WardLoughDrawdown(
         in some calls
     Returns
     -------
-    ddwn float
-        drawdown at specified location or locations [L]
+    ddwn float, 2-column ndarray
+        drawdown at specified location [L]
+        in the shallow aquifer (column 0)
+        and the deeper aquifer (column 1)
 
     Other Parameters
     ----------------
@@ -384,7 +386,7 @@ def WardLoughDrawdown(
             print(f"Overflow error in s2 calculation at index {ii}: {e}")
             s2[ii] = np.nan  # Assign NaN if there's an overflow
 
-    return s1 * Q / T2, s2 * Q / T2  # re-dimensionalize
+    return np.array(list(zip(s1 * Q / T2, s2 * Q / T2)))  # re-dimensionalize
 
 
 # define stream depletion methods here

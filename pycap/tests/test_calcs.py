@@ -772,9 +772,9 @@ def test_ward_lough_drawdown(ward_lough_test_data):
     s1_test = ward_lough_test_data["s1_test"]
     s2_test = ward_lough_test_data["s2_test"]
     allpars["t"] = s1_test.index * 100
-    s1_test["mod"], _ = pycap.WardLoughDrawdown(**allpars)
+    s1_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 0]
     allpars["t"] = s2_test.index * 100
-    _, s2_test["mod"] = pycap.WardLoughDrawdown(**allpars)
+    s2_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 1]
     assert np.allclose(
         s1_test["mod"] * allpars["T2"] / allpars["Q"], s1_test["s"], atol=0.035
     )
@@ -792,8 +792,9 @@ def test_complex_well(ward_lough_test_data):
     allpars["T"] = allpars["T1"]
     allpars["S"] = allpars["S1"]
     allpars["stream_dist"] = None
-    allpars["drawdown_dist"] = None
+    allpars["drawdown_dist"] = {"dd1": 100}
     allpars["stream_dist"] = {"resp1": allpars["dist"]}
+
     allpars["stream_apportionment"] = {"resp1": 1.0}
     allpars["Q"] /= GPM2CFD
     allpars["Q"] = pd.Series(
@@ -803,7 +804,18 @@ def test_complex_well(ward_lough_test_data):
     allpars.pop("S1")
     allpars.pop("dist")
 
-    w = Well("newwell", depl_method="wardlough", **allpars)
+    w = Well(
+        "newwell",
+        depl_method="wardlough",
+        drawdown_method="wardloughddwn",
+        **allpars,
+    )
 
     depl = w.depletion
     assert len(depl) > 0
+
+    ddn = w.drawdown
+    assert len(ddn) > 0
+
+    maxdep = w.max_depletion
+    assert len(maxdep) > 0
