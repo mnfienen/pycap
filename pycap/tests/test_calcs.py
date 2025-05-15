@@ -602,81 +602,75 @@ def SIR2009_5003_Table2_Batch_results():
 
     return check_df
 
-
-def test_geoprocessing(SIR2009_5003_Table2_Batch_results):
-    from pycap.geoprocessing import Geoprocess
-
-    geopro = Geoprocess(
-        datapath / "WWAP_110507.shp",
-        datapath / "WWAP_ValleySegments_080907.shp",
-        catch_idx="ADJ_SEGMNT",
-        stream_idx="ADJ_SEGMNT",
-    )
-
-    well = [
-        {
-            "name": "testwell0",
-            "lat": 44.979953,
-            "long": -84.625023,
-            "rate": 70,
-            "depth": 80,
-        },
-        {
-            "name": "testwell1",
-            "lat": 44.99,
-            "long": -84.64,
-            "rate": 70,
-            "depth": 80,
-        },
-    ]  # gpm and ft
-
-    well_temp = pd.DataFrame(well)
-    well_list = geopro.get_geometries(well_temp)
-    print(well_list)
-
-    # testwell0 should match the table from SIR
-    home = well_list[0].home_df.copy()
-    nearest = well_list[0].close_points_df.copy()
-
-    # need to call the hunt99 function
-    time = 5.0 * 365.25  # 5 years
-    # pumping is 70 gpm; 1 gpm = 0.0022280093 cfs
-    Q = well_temp.loc[0, "rate"] * 0.0022280093
-    T = home.loc[11967, "MEDIAN_T"]
-    S = 0.01
-    streambed_conductance = (
-        home.loc[11967, "EST_Kv_W"] / well_temp.loc[0, "depth"]
-    )
-
-    # hunt99 returns CFS need to convert to GPM for table
-    nearest["analytical_removal"] = nearest["distance"].apply(
-        lambda dist: pycap.hunt99(
-            T, S, time, dist, Q, streambed_conductance=streambed_conductance
-        )
-        * 448.83116885
-    )
-    nearest["valley_seg_removal"] = (
-        nearest["apportionment"] * nearest["analytical_removal"]
-    )
-    nearest["percent"] = nearest["apportionment"] * 100.0
-
+def test_WellClass(SIR2009_5003_Table2_Batch_results):
+    """Test the Well Class ability to distribute
+    depletion using the Hunt (1999) solution and 
+    inverse distance weighting by comparing the results
+    to Table 2 from the SIR 2009-5003.  For the test, the
+    distances to the streams and well characteristics
+    are provided and passed to the Well object.
+    Drawdown and depletion are attributes of the object.
+    
+    """
     check_df = SIR2009_5003_Table2_Batch_results
+    stream_table = pd.DataFrame(({'id': 8, 'distance': 14802},
+                            {'id': 9, 'distance': 12609.2},
+                            {'id': 11, 'distance': 15750.5},
+                            {'id': 27, 'distance': 22567.6},
+                            {'id': 9741, 'distance': 27565.2},
+                            {'id': 10532, 'distance': 33059.5},
+                            {'id': 11967, 'distance': 14846.3},
+                            {'id': 12515, 'distance': 17042.55},
+                            {'id': 12573, 'distance': 11959.5},
+                            {'id': 12941, 'distance': 19070.8},
+                            {'id': 13925, 'distance': 10028.9}))
+
+    # use inverse-distnace weighting apportionment
+    invers =np.array([1/x for x in stream_table['distance']])
+    stream_table['apportionment'] = (1./stream_table['distance'])/np.sum(invers)
+
+    # other properties, for the SIR example streambed conductance was
+    # taken from the catchment containing the well
+    T= 7211.  # ft^2/day
+    S= 0.01
+    Q = 70  # 70 gpm 
+    stream_table['conductance'] = 7.11855
+    well_name = 'demo'
+    pumpdays = int(5. * 365)
+
+    # Well class needs a Pandas series for pumping, and units should be 
+    # cubic feet per day
+    Q = pycap.Q2ts(pumpdays, 5, Q) * pycap.GPM2CFD
+
+    # Well class needs dictionaries of properties keyed by the well names/ids
+    distances = dict(zip(stream_table.id.values, stream_table.distance.values))
+    apportion = dict(zip(stream_table.id.values, stream_table.apportionment.values))
+    cond = dict(zip(stream_table.id.values, stream_table.conductance.values))
+
+    # make a Well object, specify depletion method
+    test_well = pycap.Well(T=T,
+                 S=S,
+                 Q=Q,
+                 depletion_years=5,
+                 depl_method='hunt99',
+                 streambed_conductance=cond,
+                 stream_dist=distances,
+                 stream_apportionment=apportion)
+    
+    # get depletion
+    stream_depl = pd.DataFrame(test_well.depletion)
+
+    # convert to GPM to compare with Table 2 and check
+    stream_depl = stream_depl/pycap.GPM2CFD
+
+    five_year = pd.DataFrame(stream_depl.loc[1824].T)
+    five_year.rename(columns={1824: 'Depletion'}, inplace=True)
 
     tol = 0.01
     np.testing.assert_allclose(
-        nearest["percent"].values, check_df["Removal_percent"].values, atol=tol
-    )
-    tol = 0.04
-    np.testing.assert_allclose(
-        nearest["analytical_removal"].values,
-        check_df["Analytical_removal_gpm"].values,
-        atol=tol,
-    )
-    tol = 0.01
-    np.testing.assert_allclose(
-        nearest["valley_seg_removal"].values,
-        check_df["Estimated_removal_gpm"].values,
-        atol=tol,
+         five_year["Depletion"].values,
+         check_df["Estimated_removal_gpm"].values,
+         atol=tol,
     )
 
 
