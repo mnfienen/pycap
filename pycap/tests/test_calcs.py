@@ -785,26 +785,25 @@ def test_ward_lough_drawdown(ward_lough_test_data):
 
 
 def test_complex_well(ward_lough_test_data):
-    from pycap.solutions import GPM2CFD
-    from pycap.utilities import Q2ts
-    from pycap.wells import Well
+    import pycap
     from pycap import WardLoughDepletion, WardLoughDrawdown
+    from pycap.wells import Well
+
     # get the test parameters
     allpars = ward_lough_test_data["params"]
     # now run the base solutions for comparisons
-    allpars["t"] = list(range(1, 100))
+    allpars["t"] = list(range(365))
     dep1 = WardLoughDepletion(**allpars)
     ddn1 = WardLoughDrawdown(**allpars)
+
+    # now configure for running through Well object
     allpars["T"] = allpars["T1"]
     allpars["S"] = allpars["S1"]
     allpars["stream_dist"] = None
     allpars["drawdown_dist"] = {"dd1": allpars["dist"]}
     allpars["stream_dist"] = {"resp1": allpars["dist"]}
-
     allpars["stream_apportionment"] = {"resp1": 1.0}
-    allpars["Q"] = pd.Series(
-        index=range(1, 100), data=allpars["Q"]
-    )
+    allpars["Q"] = pycap.Q2ts(365, 1, allpars["Q"])
     allpars.pop("T1")
     allpars.pop("S1")
     allpars.pop("t")
@@ -824,5 +823,8 @@ def test_complex_well(ward_lough_test_data):
     assert len(ddn) > 0
 
     maxdep = w.max_depletion
-    assert len(maxdep) > 0
+    assert len(maxdep) == 1
 
+    # now check against non-Well-object calcs
+    assert np.allclose(dep1[1:], depl["resp1"][1:])
+    assert np.allclose(ddn["dd1"][1:], ddn1[1:])
