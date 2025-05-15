@@ -1,8 +1,8 @@
 import pathlib as pl
 import subprocess
 
-pestdir = pl.Path("../source/examples")
-nbs = pestdir.glob("*.ipynb")
+exampledir = pl.Path("../source/examples")
+nbs = exampledir.glob("*.ipynb")
 for nb in nbs:
     print("clearing", nb)
     cmd = (
