@@ -788,20 +788,26 @@ def test_complex_well(ward_lough_test_data):
     from pycap.solutions import GPM2CFD
     from pycap.utilities import Q2ts
     from pycap.wells import Well
-
+    from pycap import WardLoughDepletion, WardLoughDrawdown
+    # get the test parameters
     allpars = ward_lough_test_data["params"]
+    # now run the base solutions for comparisons
+    allpars["t"] = list(range(1, 100))
+    dep1 = WardLoughDepletion(**allpars)
+    ddn1 = WardLoughDrawdown(**allpars)
     allpars["T"] = allpars["T1"]
     allpars["S"] = allpars["S1"]
     allpars["stream_dist"] = None
-    allpars["drawdown_dist"] = {"dd1": 100}
+    allpars["drawdown_dist"] = {"dd1": allpars["dist"]}
     allpars["stream_dist"] = {"resp1": allpars["dist"]}
 
     allpars["stream_apportionment"] = {"resp1": 1.0}
     allpars["Q"] = pd.Series(
-        index=range(1, 102), data=[0] + [allpars["Q"]] * 100
+        index=range(1, 100), data=allpars["Q"]
     )
     allpars.pop("T1")
     allpars.pop("S1")
+    allpars.pop("t")
     allpars.pop("dist")
 
     w = Well(
@@ -810,7 +816,7 @@ def test_complex_well(ward_lough_test_data):
         drawdown_method="wardloughddwn",
         **allpars,
     )
-
+    # athens test - just making sure they run
     depl = w.depletion
     assert len(depl) > 0
 
@@ -819,3 +825,4 @@ def test_complex_well(ward_lough_test_data):
 
     maxdep = w.max_depletion
     assert len(maxdep) > 0
+
