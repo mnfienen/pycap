@@ -137,6 +137,21 @@ class WellResponse:
         self.aquitard_K = aquitard_K
         self.x = x
         self.y = y
+        self.extra_args = {
+            "streambed_conductance": streambed_conductance,
+            "Bprime": Bprime,
+            "Bdouble": Bdouble,
+            "sigma": sigma,
+            "width": width,
+            "T2": T2,
+            "S2": S2,
+            "streambed_thick": streambed_thick,
+            "streambed_K": streambed_K,
+            "aquitard_thick": aquitard_thick,
+            "aquitard_K": aquitard_K,
+            "x": x,
+            "y": y,
+        }
 
     def _calc_drawdown(self):
         """calculate drawdown at requested distance and
@@ -152,22 +167,7 @@ class WellResponse:
         idx = deltaQ.index[0] - 1
         cQ = deltaQ.iloc[0]
         ct = list(range(idx, len(self.Q)))
-        extra_args = {
-            "streambed_conductance": self.streambed_conductance,
-            "Bprime": self.Bprime,
-            "Bdouble": self.Bdouble,
-            "sigma": self.sigma,
-            "width": self.width,
-            "T2": self.T2,
-            "S2": self.S2,
-            "streambed_thick": self.streambed_thick,
-            "streambed_K": self.streambed_K,
-            "aquitard_thick": self.aquitard_thick,
-            "aquitard_K": self.aquitard_K,
-            "x": self.x,
-            "y": self.y,
-        }
-        dd[idx:] = dd_f(self.T, self.S, ct, self.dist, cQ, **extra_args)
+        dd[idx:] = dd_f(self.T, self.S, ct, self.dist, cQ, **self.extra_args)
         if len(deltaQ) > 1:
             deltaQ = deltaQ.iloc[1:]
             for idx, cQ in zip(deltaQ.index, deltaQ.values):
@@ -176,7 +176,7 @@ class WellResponse:
                 # note that by setting Q negative from the diff calculations, we always add
                 # below for the image wells
                 dd[idx:] += dd_f(
-                    self.T, self.S, ct, self.dist, cQ, **extra_args
+                    self.T, self.S, ct, self.dist, cQ, **self.extra_args
                 )
         return dd
 
@@ -198,28 +198,13 @@ class WellResponse:
             T = self.T_gpd_ft
         else:
             T = self.T
-        extra_args = {
-            "streambed_conductance": self.streambed_conductance,
-            "Bprime": self.Bprime,
-            "Bdouble": self.Bdouble,
-            "sigma": self.sigma,
-            "width": self.width,
-            "T2": self.T2,
-            "S2": self.S2,
-            "streambed_thick": self.streambed_thick,
-            "streambed_K": self.streambed_K,
-            "aquitard_thick": self.aquitard_thick,
-            "aquitard_K": self.aquitard_K,
-            "x": self.x,
-            "y": self.y,
-        }
         depl[idx:] = depl_f(
             T,
             self.S,
             ct,
             self.dist,
             cQ * self.stream_apportionment,
-            **extra_args,
+            **self.extra_args,
         )
         if len(deltaQ) > 1:
             deltaQ = deltaQ.iloc[1:]
@@ -234,7 +219,7 @@ class WellResponse:
                     ct,
                     self.dist,
                     cQ * self.stream_apportionment,
-                    **extra_args,
+                    **self.extra_args,
                 )
         return depl
 
