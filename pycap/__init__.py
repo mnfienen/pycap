@@ -1,6 +1,7 @@
 from .solutions import (
     ALL_DD_METHODS,
     ALL_DEPL_METHODS,
+    CFD2GPM,
     GPM2CFD,
     WardLoughDepletion,
     WardLoughDrawdown,
