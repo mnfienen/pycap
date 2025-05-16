@@ -1,4 +1,5 @@
 import sys
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -7,7 +8,7 @@ import scipy.special as sps
 from scipy.special import gammaln
 
 # suppress divide by zero errors
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
 """ File of drawdown and stream depletion analytical solutions
     as part of the pycap suite.
@@ -138,6 +139,9 @@ def hunt99ddwn(
 
     # compute a single x, y point at a given time
     if timescalar and spacescalar:
+        warnings.filterwarnings(
+            "ignore", category=integrate.IntegrationWarning
+        )
         [strmintegral, err] = integrate.quad(
             _ddwn2,
             0.0,
@@ -153,6 +157,9 @@ def hunt99ddwn(
     if not timescalar and spacescalar:
         drawdowns = []
         for tm in time:
+            warnings.filterwarnings(
+                "ignore", category=integrate.IntegrationWarning
+            )
             [strmintegral, err] = integrate.quad(
                 _ddwn2,
                 0.0,
@@ -179,6 +186,9 @@ def hunt99ddwn(
         for time_idx in range(0, len(time)):
             for i in range(0, numrow):
                 for j in range(0, numcol):
+                    warnings.filterwarnings(
+                        "ignore", category=integrate.IntegrationWarning
+                    )
                     [strmintegral, err] = integrate.quad(
                         _ddwn2,
                         0.0,
@@ -682,6 +692,9 @@ def hunt2003(
     # because of storage in the semiconfining aquifer
     correction = []
     for dt in dtime:
+        warnings.filterwarnings(
+            "ignore", category=integrate.IntegrationWarning
+        )
         [y, err] = integrate.quad(
             _integrand, 0.0, 1.0, args=(dlam, dt, epsilon, dK), limit=500
         )
@@ -1000,7 +1013,7 @@ def _if1(T1, S1, K, lambd, x, y, p):
         * np.cos(np.tan(phi) * y)
         / np.cos(phi) ** 2
     )
-
+    warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
     s1InvFour, _ = integrate.quad(
         G, 0, np.pi / 2, epsrel=1e-1, epsabs=1e-1, limit=10000
     )
@@ -1020,7 +1033,7 @@ def _if2(T1, S1, K, lambd, x, y, p):
         * np.cos(np.tan(phi) * y)
         / np.cos(phi) ** 2
     )
-
+    warnings.filterwarnings("ignore", category=integrate.IntegrationWarning)
     s2InvFour, errbnd = integrate.quad(
         H, 0, np.pi / 2, epsrel=1e-1, epsabs=1e-1, limit=10000
     )
