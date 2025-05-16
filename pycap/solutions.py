@@ -194,7 +194,7 @@ def hunt99ddwn(
                         0.0,
                         np.inf,
                         args=(
-                            l,
+                            dist,
                             x[i, j],
                             y[i, j],
                             T,
@@ -205,7 +205,7 @@ def hunt99ddwn(
                     )
                     drawdowns[time_idx, i, j] = (Q / (4.0 * np.pi * T)) * (
                         _ddwn1(
-                            l,
+                            dist,
                             x[i, j],
                             y[i, j],
                             T,

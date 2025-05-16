@@ -31,7 +31,6 @@ pycap-dss Documentation
  
    examples/WellClass_Demonstration
    examples/Solutions_Demonstration
-   examples/WellClass_Demonstration
 
 
 .. toctree::
