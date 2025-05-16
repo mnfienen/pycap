@@ -602,75 +602,85 @@ def SIR2009_5003_Table2_Batch_results():
 
     return check_df
 
+
 def test_WellClass(SIR2009_5003_Table2_Batch_results):
     """Test the Well Class ability to distribute
-    depletion using the Hunt (1999) solution and 
+    depletion using the Hunt (1999) solution and
     inverse distance weighting by comparing the results
     to Table 2 from the SIR 2009-5003.  For the test, the
     distances to the streams and well characteristics
     are provided and passed to the Well object.
     Drawdown and depletion are attributes of the object.
-    
+
     """
     check_df = SIR2009_5003_Table2_Batch_results
-    stream_table = pd.DataFrame(({'id': 8, 'distance': 14802},
-                            {'id': 9, 'distance': 12609.2},
-                            {'id': 11, 'distance': 15750.5},
-                            {'id': 27, 'distance': 22567.6},
-                            {'id': 9741, 'distance': 27565.2},
-                            {'id': 10532, 'distance': 33059.5},
-                            {'id': 11967, 'distance': 14846.3},
-                            {'id': 12515, 'distance': 17042.55},
-                            {'id': 12573, 'distance': 11959.5},
-                            {'id': 12941, 'distance': 19070.8},
-                            {'id': 13925, 'distance': 10028.9}))
+    stream_table = pd.DataFrame(
+        (
+            {"id": 8, "distance": 14802},
+            {"id": 9, "distance": 12609.2},
+            {"id": 11, "distance": 15750.5},
+            {"id": 27, "distance": 22567.6},
+            {"id": 9741, "distance": 27565.2},
+            {"id": 10532, "distance": 33059.5},
+            {"id": 11967, "distance": 14846.3},
+            {"id": 12515, "distance": 17042.55},
+            {"id": 12573, "distance": 11959.5},
+            {"id": 12941, "distance": 19070.8},
+            {"id": 13925, "distance": 10028.9},
+        )
+    )
 
     # use inverse-distnace weighting apportionment
-    invers =np.array([1/x for x in stream_table['distance']])
-    stream_table['apportionment'] = (1./stream_table['distance'])/np.sum(invers)
+    invers = np.array([1 / x for x in stream_table["distance"]])
+    stream_table["apportionment"] = (1.0 / stream_table["distance"]) / np.sum(
+        invers
+    )
 
     # other properties, for the SIR example streambed conductance was
     # taken from the catchment containing the well
-    T= 7211.  # ft^2/day
-    S= 0.01
-    Q = 70  # 70 gpm 
-    stream_table['conductance'] = 7.11855
-    well_name = 'demo'
-    pumpdays = int(5. * 365)
+    T = 7211.0  # ft^2/day
+    S = 0.01
+    Q = 70  # 70 gpm
+    stream_table["conductance"] = 7.11855
+    pumpdays = int(5.0 * 365)
 
-    # Well class needs a Pandas series for pumping, and units should be 
+    # Well class needs a Pandas series for pumping, and units should be
     # cubic feet per day
     Q = pycap.Q2ts(pumpdays, 5, Q) * pycap.GPM2CFD
 
     # Well class needs dictionaries of properties keyed by the well names/ids
     distances = dict(zip(stream_table.id.values, stream_table.distance.values))
-    apportion = dict(zip(stream_table.id.values, stream_table.apportionment.values))
+    apportion = dict(
+        zip(stream_table.id.values, stream_table.apportionment.values)
+    )
     cond = dict(zip(stream_table.id.values, stream_table.conductance.values))
 
     # make a Well object, specify depletion method
-    test_well = pycap.Well(T=T,
-                 S=S,
-                 Q=Q,
-                 depletion_years=5,
-                 depl_method='hunt99',
-                 streambed_conductance=cond,
-                 stream_dist=distances,
-                 stream_apportionment=apportion)
-    
+    test_well = pycap.Well(
+        T=T,
+        S=S,
+        Q=Q,
+        depletion_years=5,
+        depl_method="hunt99",
+        streambed_conductance=cond,
+        stream_dist=distances,
+        stream_apportionment=apportion,
+    )
+
     # get depletion
     stream_depl = pd.DataFrame(test_well.depletion)
 
     # convert to GPM to compare with Table 2 and check
-    stream_depl = stream_depl/pycap.GPM2CFD
+    stream_depl = stream_depl / pycap.GPM2CFD
 
     five_year = pd.DataFrame(stream_depl.loc[1824].T)
-    five_year.rename(columns={1824: 'Depletion'}, inplace=True)
+    five_year.rename(columns={1824: "Depletion"}, inplace=True)
 
     tol = 0.01
     np.testing.assert_allclose(
-         five_year["Depletion"].values,
-         check_df["Estimated_removal_gpm"].values,
-         atol=tol,
+        five_year["Depletion"].values,
+        check_df["Estimated_removal_gpm"].values,
+        atol=tol,
     )
 
 
