@@ -6,6 +6,9 @@ import scipy.integrate as integrate
 import scipy.special as sps
 from scipy.special import gammaln
 
+# suppress divide by zero errors
+np.seterr(divide='ignore', invalid='ignore')
+
 """ File of drawdown and stream depletion analytical solutions
     as part of the pycap suite.
 
