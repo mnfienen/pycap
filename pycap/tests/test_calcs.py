@@ -671,7 +671,7 @@ def test_WellClass(SIR2009_5003_Table2_Batch_results):
     stream_depl = pd.DataFrame(test_well.depletion)
 
     # convert to GPM to compare with Table 2 and check
-    stream_depl = stream_depl / pycap.GPM2CFD
+    stream_depl = stream_depl * pycap.CFD2GPM
 
     five_year = pd.DataFrame(stream_depl.loc[1824].T)
     five_year.rename(columns={1824: "Depletion"}, inplace=True)
