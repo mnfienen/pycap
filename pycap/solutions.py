@@ -422,6 +422,17 @@ def glover(T, S, time, dist, Q, **kwargs):
 
 
     """
+    # turn lists into np.array so they get handled correctly
+    if isinstance(time, list) and isinstance(dist, list):
+        print("cannot have both time and distance as arrays")
+        print("in the Hunt99 method.  Need to externally loop")
+        print("over one of the arrays and pass the other")
+        sys.exit()
+    elif isinstance(time, list):
+        time = np.array(time)
+    elif isinstance(dist, list):
+        dist = np.array(dist)
+
     z = dist / np.sqrt(4 * (T / S) * time)
     return Q * sps.erfc(z)
 
