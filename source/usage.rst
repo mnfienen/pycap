@@ -1,8 +1,13 @@
 =====
 Usage
 =====
+# Overview
+The `pycap-dss` software provides analytical solutions to evaluate both streamflow depletion and drawdown resulting from pumping in groundwater wells. Several solutions for both depletion and drawdown are included and the modular software design allows for additional solutions to be added relatively easily.  
+
+In the sections below, an overview of the capabilities for 
 
 # Individual Solutions
+
 
 # Well object
     - allows for superposition in time making time series pumping
