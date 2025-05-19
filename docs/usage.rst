@@ -10,7 +10,7 @@ The `pycap-dss` software provides a suite of analytical solutions to quantify st
     import pycap
     # list the depletion functions
     pycap.ALL_DEP_METHODS
-    # list the drawdown functions
+    # list the drawdown functionspython 
     pycap.ALL_DD_METHODS
 
 
@@ -18,7 +18,7 @@ The code is designed in a modular way such that additional methods can be implem
 
 Individual Solutions
 --------------------
-The: `Solutions_Demonstration <examples/Solutions_Demonstration.ipynb>` notebook demonstrated the use of individual analytical solutions in `pycap-dss`.
+The `Solution Demonstrations`_ notebook demonstrates the use of individual analytical solutions in `pycap-dss`.
 
 
 Well Object
