@@ -1,10 +1,10 @@
 [
   {
-    "name": "pycap",
+    "name": "pycap-dss",
     "organization": "U.S. Geological Survey and Wisconsin Department of Natural Resources",
     "description": "analytical solutions for streamflow depletion calculations with wells",
     "version": "0.1",
-    "status": "Alpha",
+    "status": "Beta",
 
     "permissions": {
       "usageType": "openSource",
@@ -18,11 +18,11 @@
 
     "homepageURL": "https://github.com/DOI-USGS/pycap-dss",
     "downloadURL": "https://github.com/DOI-USGS/pycap-dss/archive/refs/heads/main.zip",
-    "disclaimerURL": "https://github.com/DOI-USGS/pyca-dss/raw/main/DISCLAIMER.md",
+    "disclaimerURL": "https://github.com/DOI-USGS/pycap-dss/raw/main/DISCLAIMER.md",
     "repositoryURL": "https://github.com/DOI-USGS/pycap-dss.git",
     "vcs": "git",
 
-    "laborHours": 0,
+    "laborHours": 80,
 
     "tags": [
       "groundwater",
@@ -41,7 +41,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2025-05-06"
+      "metadataLastUpdated": "2025-05-20"
     }
   }
 ]
