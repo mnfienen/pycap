@@ -727,7 +727,7 @@ def test_hunt99ddwn():
     x = 50.0
     y = 0.0
 
-    ddwn = pycap.hunt99ddwn(T, S, time, dist, Q, streambed=rlambda, x=x, y=y)
+    ddwn = pycap.hunt99ddwn(T, S, time, dist, Q, streambed_conductance=rlambda, x=x, y=y)
     no_stream = pycap.theis(T, S, time, (dist - x), Q)
     assert ddwn == no_stream
 
