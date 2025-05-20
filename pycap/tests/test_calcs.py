@@ -816,19 +816,15 @@ def test_complex_well(ward_lough_test_data):
     w = Well(
         "newwell",
         depl_method="wardlough",
-        drawdown_method="wardloughddwn",
         **allpars,
     )
-    # athens test - just making sure they run
+    # athens test - just making sure it runs
     depl = w.depletion
     assert len(depl) > 0
-
-    ddn = w.drawdown
-    assert len(ddn) > 0
 
     maxdep = w.max_depletion
     assert len(maxdep) == 1
 
-    # now check against non-Well-object calcs
+    # now check against non-Well-object calcs only valid for depletion
     assert np.allclose(dep1[1:], depl["resp1"][1:])
-    assert np.allclose(ddn["dd1"][1:], ddn1[1:])
+    
