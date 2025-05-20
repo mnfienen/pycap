@@ -15,6 +15,34 @@ np.seterr(divide="ignore", invalid="ignore")
 
 """
 
+def check_nones(all_vars, var_dict):
+    """Function to check if any of the required parameters are
+        set to None (default) value. Call to this function
+        is added to all solutions that require parameters in 
+        addition to T, S, time, dist and Q.
+
+        Parameters
+        ----------
+        all_vars: dictionary
+            dictionary of variable values passed from calling
+            routine, can be generated using locals()
+        var_dict: dictionary
+            key is the function name and value is a list of 
+            required parameter names.
+    """
+    fxn_name = list(var_dict.keys())[0]
+    
+    nonevars = {k:v 
+            for k,v in all_vars.items()
+            if (k in var_dict[fxn_name]) &
+            (v is None)}
+    if len(nonevars) > 0:
+        print(f"The function: {fxn_name} requires the following")
+        print("additional arguments which were missing")
+        print("in the function call:")
+        print(", ".join(nonevars.keys()))
+        sys.exit()
+
 
 # define drawdown methods here
 def theis(T, S, time, dist, Q, **kwargs):
@@ -74,7 +102,7 @@ def theis(T, S, time, dist, Q, **kwargs):
 
 
 def hunt99ddwn(
-    T, S, time, dist, Q, streambed_conductance=0, x=0, y=0, **kwargs
+    T, S, time, dist, Q, streambed_conductance=None, x=None, y=None, **kwargs
 ):
     """Function to calculate drawdown in an aquifer with a partially
         penetrating stream including streambed resistance (Hunt, 1999).
@@ -123,6 +151,7 @@ def hunt99ddwn(
         (ntimes, meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes [L]
     """
+    check_nones(locals(), {'hunt99ddwn':['streambed_conductance', 'x', 'y']})
 
     # turn lists into np.array so they get handled correctly,
     # check if time or space is an array
@@ -270,15 +299,15 @@ def WardLoughDrawdown(
     t,
     dist,
     Q,
-    T2,
-    S2,
-    width,
-    streambed_thick,
-    streambed_K,
-    aquitard_thick,
-    aquitard_K,
-    x,
-    y,
+    T2=None,
+    S2=None,
+    width=None,
+    streambed_thick=None,
+    streambed_K=None,
+    aquitard_thick=None,
+    aquitard_K=None,
+    x=None,
+    y=None,
     NSteh1=2,
     NSteh2=2,
     **kwargs,
@@ -349,6 +378,16 @@ def WardLoughDrawdown(
         stream width (b in paper) [L]
 
     """
+    check_nones(locals(), {'WardLoughDrawdown':['T2',
+                                                'S2',
+                                                'width',
+                                                'streambed_thick',
+                                                'streambed_K',
+                                                'aquitard_thick',
+                                                'aquitard_K',
+                                                'x',
+                                                'y']})
+
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
         T1,
@@ -535,7 +574,7 @@ def walton(T, S, time, dist, Q, **kwargs):
     return ret_vals
 
 
-def hunt99(T, S, time, dist, Q, streambed_conductance, **kwargs):
+def hunt99(T, S, time, dist, Q, streambed_conductance=None, **kwargs):
     """Function for Hunt (1999) solution for streamflow depletion by a pumping well.
 
         Computes streamflow depletion by a pumping well for a partially penetrating
@@ -570,7 +609,7 @@ def hunt99(T, S, time, dist, Q, streambed_conductance, **kwargs):
     streambed_conductance: float
         streambed_conductance conductance [L/T] (lambda in the paper)
     """
-
+    check_nones(locals(), {'hunt99':['streambed_conductance']})
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
@@ -607,12 +646,12 @@ def hunt2003(
     time,
     dist,
     Q,
-    Bprime,
-    Bdouble,
-    aquitard_K,
-    sigma,
-    width,
-    streambed_conductance,
+    Bprime=None,
+    Bdouble=None,
+    aquitard_K=None,
+    sigma=None,
+    width=None,
+    streambed_conductance=None,
     **kwargs,
 ):
     """Function for Hunt (2003) solution for streamflow depletion by a pumping well.
@@ -663,6 +702,12 @@ def hunt2003(
         streambed conductance [L/T] (lambda in the paper),
         only used if K is less than 1e-10
     """
+    check_nones(locals(), {'hunt2003':['Bprime',
+                                      'Bdouble',
+                                      'aquitard_K',
+                                      'sigma',
+                                      'width',
+                                      'streambed_conductance']})
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
@@ -890,15 +935,15 @@ def WardLoughDepletion(
     t,
     dist,
     Q,
-    T2,
-    S2,
-    width,
-    streambed_thick,
-    streambed_K,
-    aquitard_thick,
-    aquitard_K,
-    x=0,
-    y=0,
+    T2=None,
+    S2=None,
+    width=None,
+    streambed_thick=None,
+    streambed_K=None,
+    aquitard_thick=None,
+    aquitard_K=None,
+    x=None,
+    y=None,
     NSteh1=2,
     **kwargs,
 ):
@@ -964,6 +1009,15 @@ def WardLoughDepletion(
         stream width (b in paper) [L]
 
     """
+    check_nones(locals(), {'WardLoughDepletion':['T2',
+                                                 'S2',
+                                                 'width',
+                                                 'streambed_thick',
+                                                 'streambed_K',
+                                                 'aquitard_thick',
+                                                 'aquitard_K',
+                                                 'x',
+                                                 'y']})
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
         T1,
