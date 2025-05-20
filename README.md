@@ -22,3 +22,7 @@ Metadata Links
 [License](LICENSE.md)
 
 [Disclaimer](DISCLAIMER.md)
+
+For USGS Use:
+Placeholder DOI: https://doi.org/10.5066/P13XHZ9J
+IPDS record: IP-179398 
