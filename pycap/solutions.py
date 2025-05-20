@@ -912,8 +912,8 @@ def _WardLoughNonDimensionalize(
     aquitard_thick,
     aquitard_K,
     t,
-    x,
-    y,
+    x=0,
+    y=0,
 ):
     """Internal function to make non-dimensional groups for Ward and Lough solution"""
     t = np.array(t)  # make sure not passing a list
@@ -942,8 +942,6 @@ def WardLoughDepletion(
     streambed_K=None,
     aquitard_thick=None,
     aquitard_K=None,
-    x=None,
-    y=None,
     NSteh1=2,
     **kwargs,
 ):
@@ -996,12 +994,6 @@ def WardLoughDepletion(
         thickness of intervening leaky aquitard, [L]
     aquitard_K: float
         hydraulic conductivity of intervening leaky aquifer, [L/T]
-    x: float
-        x-coordinate of drawdown location
-        (with origin being x=0 at stream location) [L]
-    y: float
-        y-coordinate of drawdown location
-        (with origin being y=0 at pumping well location) [L]
     NSteh1: int
         Number of Stehfest series levels - algorithmic tuning parameter.
         Defaults to 2.
@@ -1010,14 +1002,12 @@ def WardLoughDepletion(
 
     """
     check_nones(locals(), {'WardLoughDepletion':['T2',
-                                                 'S2',
-                                                 'width',
-                                                 'streambed_thick',
-                                                 'streambed_K',
-                                                 'aquitard_thick',
-                                                 'aquitard_K',
-                                                 'x',
-                                                 'y']})
+                                'S2',
+                                'width',
+                                'streambed_thick',
+                                'streambed_K',
+                                'aquitard_thick',
+                                'aquitard_K']})
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
         T1,
@@ -1032,24 +1022,24 @@ def WardLoughDepletion(
         aquitard_thick,
         aquitard_K,
         t,
-        x,
-        y,
+        0,
+        0,
     )
 
     # Inverse Fourier transform
     DeltaQ = _StehfestCoeff(1, NSteh1) * _if1_dQ(
-        T1, S1, K, lambd, np.log(2) / t, x, y
+        T1, S1, K, lambd, np.log(2) / t
     )
     for jj in range(2, NSteh1 + 1):
         DeltaQ += _StehfestCoeff(jj, NSteh1) * _if1_dQ(
-            T1, S1, K, lambd, jj * np.log(2) / t, x, y
+            T1, S1, K, lambd, jj * np.log(2) / t
         )
     DeltaQ = 2 * np.pi * lambd * DeltaQ * np.log(2) / t
 
     return DeltaQ * Q  # convert back to CFS from CFD
 
 
-def _if1_dQ(T1, S1, K, lambda_, p, x, y):
+def _if1_dQ(T1, S1, K, lambda_, p):
     """Internal function for Ward and Lough (2011) solution"""
     return _kernel1(T1, S1, K, lambda_, 0, 0, p) + _kernel2(
         T1, S1, K, lambda_, 0, 0, p
