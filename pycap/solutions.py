@@ -942,7 +942,7 @@ def WardLoughDepletion(
     streambed_K=None,
     aquitard_thick=None,
     aquitard_K=None,
-    x=None,
+    x=None, 
     y=None,
     NSteh1=2,
     **kwargs,
@@ -1015,8 +1015,8 @@ def WardLoughDepletion(
                                                  'streambed_thick',
                                                  'streambed_K',
                                                  'aquitard_thick',
-                                                 'aquitard_K',
-                                                 'x',
+                                                 'aquitard_K', 
+                                                 'x', 
                                                  'y']})
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
