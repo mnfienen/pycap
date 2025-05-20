@@ -759,6 +759,8 @@ def test_ward_lough_depletion(ward_lough_test_data):
     dQ2_test["mod"] = pycap.WardLoughDepletion(**allpars)
     allpars["t"] = dQ1_test.index * 100
     allpars["T1"] = 0.01
+    allpars.pop("x")
+    allpars.pop("y")  
     allpars["aquitard_K"] = 0.001
     dQ1_test["mod"] = pycap.WardLoughDepletion(**allpars)
     assert np.allclose(
