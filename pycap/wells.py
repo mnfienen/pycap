@@ -1,5 +1,5 @@
 import numpy as np
-
+import sys
 import pycap
 
 
@@ -299,6 +299,9 @@ class Well:
             Method to be used for depletion calculations. Defaults to 'Glover'.
         drawdown_method: string, optional
             Method to be used for drawdown calculations. Defaults to 'Theis'.
+            Only 'theis' is available right now in the Well() class, if
+            Hunt (1999) or Ward and Lough (2014) are desired, the function
+            must be called directly
         streambed_conductance: float
             Streambed conductance for the Hunt99 depletion method [L/T].
             Defaults to None
@@ -375,6 +378,10 @@ class Well:
         # 'new_approved', 'inactive' }
         # make sure stream names consistent
         # between dist and apportionment
+
+        if self.drawdown_method.lower() != 'theis':
+            print('Theis must be used as drawdown method in Well Class.')
+            sys.exit()
         if stream_dist is not None and stream_apportionment is not None:
             assert (
                 len(
