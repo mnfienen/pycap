@@ -1,5 +1,7 @@
-import numpy as np
 import sys
+
+import numpy as np
+
 import pycap
 
 
@@ -379,8 +381,8 @@ class Well:
         # make sure stream names consistent
         # between dist and apportionment
 
-        if self.drawdown_method.lower() != 'theis':
-            print('Theis must be used as drawdown method in Well Class.')
+        if self.drawdown_method.lower() != "theis":
+            print("Theis must be used as drawdown method in Well Class.")
             sys.exit()
         if stream_dist is not None and stream_apportionment is not None:
             assert (

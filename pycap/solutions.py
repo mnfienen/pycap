@@ -15,27 +15,29 @@ np.seterr(divide="ignore", invalid="ignore")
 
 """
 
-def check_nones(all_vars, var_dict):
-    """Function to check if any of the required parameters are
-        set to None (default) value. Call to this function
-        is added to all solutions that require parameters in 
-        addition to T, S, time, dist and Q.
 
-        Parameters
-        ----------
-        all_vars: dictionary
-            dictionary of variable values passed from calling
-            routine, can be generated using locals()
-        var_dict: dictionary
-            key is the function name and value is a list of 
-            required parameter names.
+def _check_nones(all_vars, var_dict):
+    """Function to check if any of the required parameters are
+    set to None (default) value. Call to this function
+    is added to all solutions that require parameters in
+    addition to T, S, time, dist and Q.
+
+    Parameters
+    ----------
+    all_vars: dictionary
+        dictionary of variable values passed from calling
+        routine, can be generated using locals()
+    var_dict: dictionary
+        key is the function name and value is a list of
+        required parameter names.
     """
     fxn_name = list(var_dict.keys())[0]
-    
-    nonevars = {k:v 
-            for k,v in all_vars.items()
-            if (k in var_dict[fxn_name]) &
-            (v is None)}
+
+    nonevars = {
+        k: v
+        for k, v in all_vars.items()
+        if (k in var_dict[fxn_name]) & (v is None)
+    }
     if len(nonevars) > 0:
         print(f"The function: {fxn_name} requires the following")
         print("additional arguments which were missing")
@@ -151,7 +153,7 @@ def hunt99ddwn(
         (ntimes, meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes [L]
     """
-    check_nones(locals(), {'hunt99ddwn':['streambed_conductance', 'x', 'y']})
+    _check_nones(locals(), {"hunt99ddwn": ["streambed_conductance", "x", "y"]})
 
     # turn lists into np.array so they get handled correctly,
     # check if time or space is an array
@@ -378,15 +380,22 @@ def WardLoughDrawdown(
         stream width (b in paper) [L]
 
     """
-    check_nones(locals(), {'WardLoughDrawdown':['T2',
-                                                'S2',
-                                                'width',
-                                                'streambed_thick',
-                                                'streambed_K',
-                                                'aquitard_thick',
-                                                'aquitard_K',
-                                                'x',
-                                                'y']})
+    _check_nones(
+        locals(),
+        {
+            "WardLoughDrawdown": [
+                "T2",
+                "S2",
+                "width",
+                "streambed_thick",
+                "streambed_K",
+                "aquitard_thick",
+                "aquitard_K",
+                "x",
+                "y",
+            ]
+        },
+    )
 
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
@@ -609,7 +618,7 @@ def hunt99(T, S, time, dist, Q, streambed_conductance=None, **kwargs):
     streambed_conductance: float
         streambed_conductance conductance [L/T] (lambda in the paper)
     """
-    check_nones(locals(), {'hunt99':['streambed_conductance']})
+    _check_nones(locals(), {"hunt99": ["streambed_conductance"]})
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
@@ -702,12 +711,19 @@ def hunt2003(
         streambed conductance [L/T] (lambda in the paper),
         only used if K is less than 1e-10
     """
-    check_nones(locals(), {'hunt2003':['Bprime',
-                                      'Bdouble',
-                                      'aquitard_K',
-                                      'sigma',
-                                      'width',
-                                      'streambed_conductance']})
+    _check_nones(
+        locals(),
+        {
+            "hunt2003": [
+                "Bprime",
+                "Bdouble",
+                "aquitard_K",
+                "sigma",
+                "width",
+                "streambed_conductance",
+            ]
+        },
+    )
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
@@ -1001,13 +1017,20 @@ def WardLoughDepletion(
         stream width (b in paper) [L]
 
     """
-    check_nones(locals(), {'WardLoughDepletion':['T2',
-                                'S2',
-                                'width',
-                                'streambed_thick',
-                                'streambed_K',
-                                'aquitard_thick',
-                                'aquitard_K']})
+    _check_nones(
+        locals(),
+        {
+            "WardLoughDepletion": [
+                "T2",
+                "S2",
+                "width",
+                "streambed_thick",
+                "streambed_K",
+                "aquitard_thick",
+                "aquitard_K",
+            ]
+        },
+    )
     # first nondimensionalize all the parameters
     x, y, t, T1, S1, K, lambd = _WardLoughNonDimensionalize(
         T1,
