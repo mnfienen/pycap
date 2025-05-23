@@ -727,7 +727,9 @@ def test_hunt99ddwn():
     x = 50.0
     y = 0.0
 
-    ddwn = pycap.hunt99ddwn(T, S, time, dist, Q, streambed_conductance=rlambda, x=x, y=y)
+    ddwn = pycap.hunt99ddwn(
+        T, S, time, dist, Q, streambed_conductance=rlambda, x=x, y=y
+    )
     no_stream = pycap.theis(T, S, time, (dist - x), Q)
     assert ddwn == no_stream
 
@@ -760,7 +762,7 @@ def test_ward_lough_depletion(ward_lough_test_data):
     allpars["t"] = dQ1_test.index * 100
     allpars["T1"] = 0.01
     allpars.pop("x")
-    allpars.pop("y")  
+    allpars.pop("y")
     allpars["aquitard_K"] = 0.001
     dQ1_test["mod"] = pycap.WardLoughDepletion(**allpars)
     assert np.allclose(
@@ -800,7 +802,6 @@ def test_complex_well(ward_lough_test_data):
     # now run the base solutions for comparisons
     allpars["t"] = list(range(365))
     dep1 = WardLoughDepletion(**allpars)
-    ddn1 = WardLoughDrawdown(**allpars)
 
     # now configure for running through Well object
     allpars["T"] = allpars["T1"]
@@ -829,4 +830,3 @@ def test_complex_well(ward_lough_test_data):
 
     # now check against non-Well-object calcs only valid for depletion
     assert np.allclose(dep1[1:], depl["resp1"][1:])
-    
