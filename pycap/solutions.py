@@ -47,7 +47,7 @@ def _check_nones(all_vars, var_dict):
 
 
 # define drawdown methods here
-def theis(T, S, time, dist, Q, **kwargs):
+def theis_drawdown(T, S, time, dist, Q, **kwargs):
     """Function to calculate Theis drawdown. Units are not specified, but
         should be consistent length and time.
 
@@ -103,7 +103,7 @@ def theis(T, S, time, dist, Q, **kwargs):
     return (Q / (4.0 * np.pi * T)) * sps.exp1(u)
 
 
-def hunt99ddwn(
+def hunt_99_drawdown(
     T, S, time, dist, Q, streambed_conductance=None, x=None, y=None, **kwargs
 ):
     """Function to calculate drawdown in an aquifer with a partially
@@ -153,7 +153,9 @@ def hunt99ddwn(
         (ntimes, meshgridxx, meshgridyy)
         depending on input form of x, y, and ntimes [L]
     """
-    _check_nones(locals(), {"hunt99ddwn": ["streambed_conductance", "x", "y"]})
+    _check_nones(
+        locals(), {"hunt_99_drawdown": ["streambed_conductance", "x", "y"]}
+    )
 
     # turn lists into np.array so they get handled correctly,
     # check if time or space is an array
@@ -253,7 +255,7 @@ def _ddwn1(dist, x, y, T, streambed, time, S):
     """Internal method to calculate Theis drawdown function for a point (x,y)
 
     Used in computing Hunt, 1999 estimate of drawdown.  Equation 30 from
-    the paper.  Variables described in hunt99ddwn function.
+    the paper.  Variables described in hunt_99_drawdown function.
     """
     if isinstance(dist, list):
         dist = np.array(dist)
@@ -279,23 +281,23 @@ def _ddwn1(dist, x, y, T, streambed, time, S):
     return sps.exp1(u1)
 
 
-def _ddwn2(theta, l, x, y, T, streambed, time, S):
+def _ddwn2(theta, dist, x, y, T, streambed, time, S):
     """Internal method to calculate function that gets integrated
         in the Hunt (1999) solution
 
     Equations 29 and 30 in the paper, theta is the constant
     of integration and the rest of the variables described in the
-    hunt99ddwn function.
+    hunt_99_drawdown function.
     """
     if streambed == 0.0:
         return 0.0
-    u2 = ((l + np.abs(x) + 2 * T * theta / streambed) ** 2 + y**2) / (
+    u2 = ((dist + np.abs(x) + 2 * T * theta / streambed) ** 2 + y**2) / (
         4.0 * T * time / S
     )
     return np.exp(-theta) * sps.exp1(u2)
 
 
-def WardLoughDrawdown(
+def ward_lough_drawdown(
     T1,
     S1,
     t,
@@ -383,7 +385,7 @@ def WardLoughDrawdown(
     _check_nones(
         locals(),
         {
-            "WardLoughDrawdown": [
+            "ward_lough_drawdown": [
                 "T2",
                 "S2",
                 "width",
@@ -451,7 +453,7 @@ def WardLoughDrawdown(
 
 
 # define stream depletion methods here
-def glover(T, S, time, dist, Q, **kwargs):
+def glover_depletion(T, S, time, dist, Q, **kwargs):
     """
     Calculate Glover and Balmer (1954) solution for stream depletion
 
@@ -486,7 +488,7 @@ def glover(T, S, time, dist, Q, **kwargs):
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
-        print("in the Hunt99 method.  Need to externally loop")
+        print("in the hunt_99_depletion method.  Need to externally loop")
         print("over one of the arrays and pass the other")
         sys.exit()
     elif isinstance(time, list):
@@ -531,7 +533,7 @@ def sdf(T, S, dist, **kwargs):
     return dist**2 * S / T
 
 
-def walton(T, S, time, dist, Q, **kwargs):
+def walton_depletion(T, S, time, dist, Q, **kwargs):
     """
     Calculate depletion using Walton (1987) PT-8 BASIC program logic
 
@@ -583,7 +585,9 @@ def walton(T, S, time, dist, Q, **kwargs):
     return ret_vals
 
 
-def hunt99(T, S, time, dist, Q, streambed_conductance=None, **kwargs):
+def hunt_99_depletion(
+    T, S, time, dist, Q, streambed_conductance=None, **kwargs
+):
     """Function for Hunt (1999) solution for streamflow depletion by a pumping well.
 
         Computes streamflow depletion by a pumping well for a partially penetrating
@@ -618,11 +622,11 @@ def hunt99(T, S, time, dist, Q, streambed_conductance=None, **kwargs):
     streambed_conductance: float
         streambed_conductance conductance [L/T] (lambda in the paper)
     """
-    _check_nones(locals(), {"hunt99": ["streambed_conductance"]})
+    _check_nones(locals(), {"hunt_99_depletion": ["streambed_conductance"]})
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
-        print("in the Hunt99 method.  Need to externally loop")
+        print("in the hunt_99_depletion method.  Need to externally loop")
         print("over one of the arrays and pass the other")
         sys.exit()
     elif isinstance(time, list):
@@ -649,7 +653,7 @@ def hunt99(T, S, time, dist, Q, streambed_conductance=None, **kwargs):
     return Q * depl
 
 
-def hunt2003(
+def hunt_03_depletion(
     T,
     S,
     time,
@@ -714,7 +718,7 @@ def hunt2003(
     _check_nones(
         locals(),
         {
-            "hunt2003": [
+            "hunt_03_depletion": [
                 "Bprime",
                 "Bdouble",
                 "aquitard_K",
@@ -727,7 +731,7 @@ def hunt2003(
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
-        print("in the Hunt2003 method.  Need to externally loop")
+        print("in the hunt_03_depletion method.  Need to externally loop")
         print("over one of the arrays and pass the other")
         sys.exit()
     elif isinstance(time, list):
@@ -767,13 +771,13 @@ def hunt2003(
     b = dlam / 2.0 + (dtime * np.power(dlam, 2) / 4.0)
     c = a + (dlam * np.sqrt(dtime) / 2.0)
 
-    # use erfxc() function from scipy (see _hunt99 above)
+    # use erfxc() function from scipy (see hunt_99_depletion above)
     # for erf(b)*erfc(c) term
     t1 = sps.erfcx(c)
     t2 = np.exp(b - c**2)
     depl = sps.erfc(a) - (t1 * t2)
 
-    ## corrected depletion for storage of upper semiconfining unit
+    # corrected depletion for storage of upper semiconfining unit
     return Q * (depl - correction)
 
 
@@ -945,7 +949,7 @@ def _WardLoughNonDimensionalize(
     return x, y, t, T1, S1, K, lambd
 
 
-def WardLoughDepletion(
+def ward_lough_depletion(
     T1,
     S1,
     t,
@@ -1020,7 +1024,7 @@ def WardLoughDepletion(
     _check_nones(
         locals(),
         {
-            "WardLoughDepletion": [
+            "ward_lough_depletion": [
                 "T2",
                 "S2",
                 "width",
@@ -1240,17 +1244,17 @@ def _StehfestCoeff(jj, N):
 # List drawdown and depletion methods so they can be called
 # programatically
 ALL_DD_METHODS = {
-    "theis": theis,
-    "hunt99ddwn": hunt99ddwn,
-    "wardloughddwn": WardLoughDrawdown,
+    "theis_drawdown": theis_drawdown,
+    "hunt_99_drawdown": hunt_99_drawdown,
+    "ward_lough_drawdown": ward_lough_drawdown,
 }
 
 ALL_DEPL_METHODS = {
-    "glover": glover,
-    "walton": walton,
-    "hunt99": hunt99,
-    "hunt03": hunt2003,
-    "wardlough": WardLoughDepletion,
+    "glover_depletion": glover_depletion,
+    "walton_depletion": walton_depletion,
+    "hunt_99_depletion": hunt_99_depletion,
+    "hunt_03_depletion": hunt_03_depletion,
+    "ward_lough_depletion": ward_lough_depletion,
 }
 
 GPM2CFD = 60 * 24 / 7.48  # factor to convert from GPM to CFD

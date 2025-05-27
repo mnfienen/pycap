@@ -13,11 +13,14 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DOI-USGS/pycap-dss.",
     packages=setuptools.find_packages(),
-    install_requires=["matplotlib","pyyaml","geopandas","numpy","scipy","pandas","gdal","fiona","rasterio>=1.0","rasterstats","shapely","rtree","pyproj>=2.0","pyshp","xlrd", "openpyxl", "requests", "pytest"],
+    install_requires=["matplotlib", "pyyaml", "geopandas",
+                    "numpy", "scipy", "pandas", "gdal", "fiona",
+                    "rasterio>=1.0", "rasterstats", "shapely", "rtree",
+                    "pyproj>=2.0", "pyshp", "xlrd",
+                    "openpyxl", "requests", "pytest"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
-        "Operating System :: OS Independent",
-    ],
+        "Operating System :: OS Independent"],
     python_requires='>=3.11',
 )
