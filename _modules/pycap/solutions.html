@@ -107,37 +107,39 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="check_nones"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.check_nones">[docs]</a><span class="k">def</span> <span class="nf">check_nones</span><span class="p">(</span><span class="n">all_vars</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Function to check if any of the required parameters are</span>
-<span class="sd">        set to None (default) value. Call to this function</span>
-<span class="sd">        is added to all solutions that require parameters in </span>
-<span class="sd">        addition to T, S, time, dist and Q.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        all_vars: dictionary</span>
-<span class="sd">            dictionary of variable values passed from calling</span>
-<span class="sd">            routine, can be generated using locals()</span>
-<span class="sd">        var_dict: dictionary</span>
-<span class="sd">            key is the function name and value is a list of </span>
-<span class="sd">            required parameter names.</span>
+<span class="k">def</span> <span class="nf">_check_nones</span><span class="p">(</span><span class="n">all_vars</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to check if any of the required parameters are</span>
+<span class="sd">    set to None (default) value. Call to this function</span>
+<span class="sd">    is added to all solutions that require parameters in</span>
+<span class="sd">    addition to T, S, time, dist and Q.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    all_vars: dictionary</span>
+<span class="sd">        dictionary of variable values passed from calling</span>
+<span class="sd">        routine, can be generated using locals()</span>
+<span class="sd">    var_dict: dictionary</span>
+<span class="sd">        key is the function name and value is a list of</span>
+<span class="sd">        required parameter names.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fxn_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">var_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-    
-    <span class="n">nonevars</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> 
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">all_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">var_dict</span><span class="p">[</span><span class="n">fxn_name</span><span class="p">])</span> <span class="o">&amp;</span>
-            <span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)}</span>
+
+    <span class="n">nonevars</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">var_dict</span><span class="p">[</span><span class="n">fxn_name</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="p">}</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonevars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The function: </span><span class="si">{</span><span class="n">fxn_name</span><span class="si">}</span><span class="s2"> requires the following&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;additional arguments which were missing&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the function call:&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nonevars</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
 
 
 <span class="c1"># define drawdown methods here</span>
-<div class="viewcode-block" id="theis"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.theis">[docs]</a><span class="k">def</span> <span class="nf">theis</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="theis_drawdown"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.theis_drawdown">[docs]</a><span class="k">def</span> <span class="nf">theis_drawdown</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to calculate Theis drawdown. Units are not specified, but</span>
 <span class="sd">        should be consistent length and time.</span>
 
@@ -193,7 +195,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">Q</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="n">sps</span><span class="o">.</span><span class="n">exp1</span><span class="p">(</span><span class="n">u</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="hunt99ddwn"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt99ddwn">[docs]</a><span class="k">def</span> <span class="nf">hunt99ddwn</span><span class="p">(</span>
+<div class="viewcode-block" id="hunt_99_drawdown"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt_99_drawdown">[docs]</a><span class="k">def</span> <span class="nf">hunt_99_drawdown</span><span class="p">(</span>
     <span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">streambed_conductance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to calculate drawdown in an aquifer with a partially</span>
@@ -243,7 +245,9 @@
 <span class="sd">        (ntimes, meshgridxx, meshgridyy)</span>
 <span class="sd">        depending on input form of x, y, and ntimes [L]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;hunt99ddwn&#39;</span><span class="p">:[</span><span class="s1">&#39;streambed_conductance&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]})</span>
+    <span class="n">_check_nones</span><span class="p">(</span>
+        <span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s2">&quot;hunt_99_drawdown&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;streambed_conductance&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]}</span>
+    <span class="p">)</span>
 
     <span class="c1"># turn lists into np.array so they get handled correctly,</span>
     <span class="c1"># check if time or space is an array</span>
@@ -343,7 +347,7 @@
     <span class="sd">&quot;&quot;&quot;Internal method to calculate Theis drawdown function for a point (x,y)</span>
 
 <span class="sd">    Used in computing Hunt, 1999 estimate of drawdown.  Equation 30 from</span>
-<span class="sd">    the paper.  Variables described in hunt99ddwn function.</span>
+<span class="sd">    the paper.  Variables described in hunt_99_drawdown function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
@@ -369,23 +373,23 @@
     <span class="k">return</span> <span class="n">sps</span><span class="o">.</span><span class="n">exp1</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_ddwn2</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">streambed</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">S</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_ddwn2</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">streambed</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">S</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Internal method to calculate function that gets integrated</span>
 <span class="sd">        in the Hunt (1999) solution</span>
 
 <span class="sd">    Equations 29 and 30 in the paper, theta is the constant</span>
 <span class="sd">    of integration and the rest of the variables described in the</span>
-<span class="sd">    hunt99ddwn function.</span>
+<span class="sd">    hunt_99_drawdown function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">streambed</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
-    <span class="n">u2</span> <span class="o">=</span> <span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">streambed</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+    <span class="n">u2</span> <span class="o">=</span> <span class="p">((</span><span class="n">dist</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">streambed</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
         <span class="mf">4.0</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">time</span> <span class="o">/</span> <span class="n">S</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">sps</span><span class="o">.</span><span class="n">exp1</span><span class="p">(</span><span class="n">u2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="WardLoughDrawdown"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.WardLoughDrawdown">[docs]</a><span class="k">def</span> <span class="nf">WardLoughDrawdown</span><span class="p">(</span>
+<div class="viewcode-block" id="ward_lough_drawdown"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.ward_lough_drawdown">[docs]</a><span class="k">def</span> <span class="nf">ward_lough_drawdown</span><span class="p">(</span>
     <span class="n">T1</span><span class="p">,</span>
     <span class="n">S1</span><span class="p">,</span>
     <span class="n">t</span><span class="p">,</span>
@@ -470,15 +474,22 @@
 <span class="sd">        stream width (b in paper) [L]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;WardLoughDrawdown&#39;</span><span class="p">:[</span><span class="s1">&#39;T2&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;S2&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;width&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;streambed_thick&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;streambed_K&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;aquitard_thick&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;aquitard_K&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;x&#39;</span><span class="p">,</span>
-                                                <span class="s1">&#39;y&#39;</span><span class="p">]})</span>
+    <span class="n">_check_nones</span><span class="p">(</span>
+        <span class="nb">locals</span><span class="p">(),</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;ward_lough_drawdown&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;T2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;S2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;width&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;streambed_thick&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;streambed_K&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;aquitard_thick&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;aquitard_K&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
 
     <span class="c1"># first nondimensionalize all the parameters</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">S1</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">lambd</span> <span class="o">=</span> <span class="n">_WardLoughNonDimensionalize</span><span class="p">(</span>
@@ -534,7 +545,7 @@
 
 
 <span class="c1"># define stream depletion methods here</span>
-<div class="viewcode-block" id="glover"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.glover">[docs]</a><span class="k">def</span> <span class="nf">glover</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="glover_depletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.glover_depletion">[docs]</a><span class="k">def</span> <span class="nf">glover_depletion</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate Glover and Balmer (1954) solution for stream depletion</span>
 
@@ -569,7 +580,7 @@
     <span class="c1"># turn lists into np.array so they get handled correctly</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot have both time and distance as arrays&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the Hunt99 method.  Need to externally loop&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the hunt_99_depletion method.  Need to externally loop&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;over one of the arrays and pass the other&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -614,7 +625,7 @@
     <span class="k">return</span> <span class="n">dist</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">S</span> <span class="o">/</span> <span class="n">T</span></div>
 
 
-<div class="viewcode-block" id="walton"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.walton">[docs]</a><span class="k">def</span> <span class="nf">walton</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="walton_depletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.walton_depletion">[docs]</a><span class="k">def</span> <span class="nf">walton_depletion</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate depletion using Walton (1987) PT-8 BASIC program logic</span>
 
@@ -666,7 +677,9 @@
     <span class="k">return</span> <span class="n">ret_vals</span></div>
 
 
-<div class="viewcode-block" id="hunt99"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt99">[docs]</a><span class="k">def</span> <span class="nf">hunt99</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">streambed_conductance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="hunt_99_depletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt_99_depletion">[docs]</a><span class="k">def</span> <span class="nf">hunt_99_depletion</span><span class="p">(</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">streambed_conductance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function for Hunt (1999) solution for streamflow depletion by a pumping well.</span>
 
 <span class="sd">        Computes streamflow depletion by a pumping well for a partially penetrating</span>
@@ -701,11 +714,11 @@
 <span class="sd">    streambed_conductance: float</span>
 <span class="sd">        streambed_conductance conductance [L/T] (lambda in the paper)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;hunt99&#39;</span><span class="p">:[</span><span class="s1">&#39;streambed_conductance&#39;</span><span class="p">]})</span>
+    <span class="n">_check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s2">&quot;hunt_99_depletion&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;streambed_conductance&quot;</span><span class="p">]})</span>
     <span class="c1"># turn lists into np.array so they get handled correctly</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot have both time and distance as arrays&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the Hunt99 method.  Need to externally loop&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the hunt_99_depletion method.  Need to externally loop&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;over one of the arrays and pass the other&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -732,7 +745,7 @@
     <span class="k">return</span> <span class="n">Q</span> <span class="o">*</span> <span class="n">depl</span></div>
 
 
-<div class="viewcode-block" id="hunt2003"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt2003">[docs]</a><span class="k">def</span> <span class="nf">hunt2003</span><span class="p">(</span>
+<div class="viewcode-block" id="hunt_03_depletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.hunt_03_depletion">[docs]</a><span class="k">def</span> <span class="nf">hunt_03_depletion</span><span class="p">(</span>
     <span class="n">T</span><span class="p">,</span>
     <span class="n">S</span><span class="p">,</span>
     <span class="n">time</span><span class="p">,</span>
@@ -794,16 +807,23 @@
 <span class="sd">        streambed conductance [L/T] (lambda in the paper),</span>
 <span class="sd">        only used if K is less than 1e-10</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;hunt2003&#39;</span><span class="p">:[</span><span class="s1">&#39;Bprime&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;Bdouble&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;aquitard_K&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;sigma&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;width&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;streambed_conductance&#39;</span><span class="p">]})</span>
+    <span class="n">_check_nones</span><span class="p">(</span>
+        <span class="nb">locals</span><span class="p">(),</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;hunt_03_depletion&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;Bprime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Bdouble&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;aquitard_K&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sigma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;width&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;streambed_conductance&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
     <span class="c1"># turn lists into np.array so they get handled correctly</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot have both time and distance as arrays&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the Hunt2003 method.  Need to externally loop&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in the hunt_03_depletion method.  Need to externally loop&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;over one of the arrays and pass the other&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -843,13 +863,13 @@
     <span class="n">b</span> <span class="o">=</span> <span class="n">dlam</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">dtime</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">dlam</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">dlam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dtime</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
 
-    <span class="c1"># use erfxc() function from scipy (see _hunt99 above)</span>
+    <span class="c1"># use erfxc() function from scipy (see hunt_99_depletion above)</span>
     <span class="c1"># for erf(b)*erfc(c) term</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">sps</span><span class="o">.</span><span class="n">erfcx</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
     <span class="n">t2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">depl</span> <span class="o">=</span> <span class="n">sps</span><span class="o">.</span><span class="n">erfc</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">t1</span> <span class="o">*</span> <span class="n">t2</span><span class="p">)</span>
 
-    <span class="c1">## corrected depletion for storage of upper semiconfining unit</span>
+    <span class="c1"># corrected depletion for storage of upper semiconfining unit</span>
     <span class="k">return</span> <span class="n">Q</span> <span class="o">*</span> <span class="p">(</span><span class="n">depl</span> <span class="o">-</span> <span class="n">correction</span><span class="p">)</span></div>
 
 
@@ -1021,7 +1041,7 @@
     <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">S1</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">lambd</span>
 
 
-<div class="viewcode-block" id="WardLoughDepletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.WardLoughDepletion">[docs]</a><span class="k">def</span> <span class="nf">WardLoughDepletion</span><span class="p">(</span>
+<div class="viewcode-block" id="ward_lough_depletion"><a class="viewcode-back" href="../../api/pycap.solutions.html#pycap.solutions.ward_lough_depletion">[docs]</a><span class="k">def</span> <span class="nf">ward_lough_depletion</span><span class="p">(</span>
     <span class="n">T1</span><span class="p">,</span>
     <span class="n">S1</span><span class="p">,</span>
     <span class="n">t</span><span class="p">,</span>
@@ -1093,13 +1113,20 @@
 <span class="sd">        stream width (b in paper) [L]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_nones</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;WardLoughDepletion&#39;</span><span class="p">:[</span><span class="s1">&#39;T2&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;S2&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;width&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;streambed_thick&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;streambed_K&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;aquitard_thick&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;aquitard_K&#39;</span><span class="p">]})</span>
+    <span class="n">_check_nones</span><span class="p">(</span>
+        <span class="nb">locals</span><span class="p">(),</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;ward_lough_depletion&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;T2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;S2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;width&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;streambed_thick&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;streambed_K&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;aquitard_thick&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;aquitard_K&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
     <span class="c1"># first nondimensionalize all the parameters</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">T1</span><span class="p">,</span> <span class="n">S1</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">lambd</span> <span class="o">=</span> <span class="n">_WardLoughNonDimensionalize</span><span class="p">(</span>
         <span class="n">T1</span><span class="p">,</span>
@@ -1309,17 +1336,17 @@
 <span class="c1"># List drawdown and depletion methods so they can be called</span>
 <span class="c1"># programatically</span>
 <span class="n">ALL_DD_METHODS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;theis&quot;</span><span class="p">:</span> <span class="n">theis</span><span class="p">,</span>
-    <span class="s2">&quot;hunt99ddwn&quot;</span><span class="p">:</span> <span class="n">hunt99ddwn</span><span class="p">,</span>
-    <span class="s2">&quot;wardloughddwn&quot;</span><span class="p">:</span> <span class="n">WardLoughDrawdown</span><span class="p">,</span>
+    <span class="s2">&quot;theis_drawdown&quot;</span><span class="p">:</span> <span class="n">theis_drawdown</span><span class="p">,</span>
+    <span class="s2">&quot;hunt_99_drawdown&quot;</span><span class="p">:</span> <span class="n">hunt_99_drawdown</span><span class="p">,</span>
+    <span class="s2">&quot;ward_lough_drawdown&quot;</span><span class="p">:</span> <span class="n">ward_lough_drawdown</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">ALL_DEPL_METHODS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;glover&quot;</span><span class="p">:</span> <span class="n">glover</span><span class="p">,</span>
-    <span class="s2">&quot;walton&quot;</span><span class="p">:</span> <span class="n">walton</span><span class="p">,</span>
-    <span class="s2">&quot;hunt99&quot;</span><span class="p">:</span> <span class="n">hunt99</span><span class="p">,</span>
-    <span class="s2">&quot;hunt03&quot;</span><span class="p">:</span> <span class="n">hunt2003</span><span class="p">,</span>
-    <span class="s2">&quot;wardlough&quot;</span><span class="p">:</span> <span class="n">WardLoughDepletion</span><span class="p">,</span>
+    <span class="s2">&quot;glover_depletion&quot;</span><span class="p">:</span> <span class="n">glover_depletion</span><span class="p">,</span>
+    <span class="s2">&quot;walton_depletion&quot;</span><span class="p">:</span> <span class="n">walton_depletion</span><span class="p">,</span>
+    <span class="s2">&quot;hunt_99_depletion&quot;</span><span class="p">:</span> <span class="n">hunt_99_depletion</span><span class="p">,</span>
+    <span class="s2">&quot;hunt_03_depletion&quot;</span><span class="p">:</span> <span class="n">hunt_03_depletion</span><span class="p">,</span>
+    <span class="s2">&quot;ward_lough_depletion&quot;</span><span class="p">:</span> <span class="n">ward_lough_depletion</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">GPM2CFD</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">/</span> <span class="mf">7.48</span>  <span class="c1"># factor to convert from GPM to CFD</span>
@@ -1334,7 +1361,7 @@
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on May 20, 2025.
+      <span class="lastupdated">Last updated on May 27, 2025.
       </span></p>
   </div>
 
