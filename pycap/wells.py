@@ -25,8 +25,8 @@ class WellResponse:
         dist,
         Q,
         stream_apportionment=None,
-        dd_method="Theis",
-        depl_method="Glover",
+        dd_method="theis_drawdown",
+        depl_method="glover_depletion",
         theis_time=-9999,
         depl_pump_time=-99999,
         streambed_conductance=None,
@@ -63,9 +63,9 @@ class WellResponse:
                 Dictionary with stream responses and fraction of depletion
                 attributed to each. Defaults to None.
         dd_method: string, optional
-            Method to be used for drawdown calculations. Defaults to 'Theis'.
+            Method to be used for drawdown calculations. Defaults to 'theis_drawdown'.
         depl_method: string, optional
-            Method to be used for depletion calculations. Defaults to 'Glover'.
+            Method to be used for depletion calculations. Defaults to 'glover_depletion'.
         theis_time: integer, optional
             Time at which drawdown calculation should be made [T].
             Defaults to -9999.
@@ -74,7 +74,7 @@ class WellResponse:
             calculations [T]. Not used if pumping time series is used.
             Defaults to -99999.
         streambed_conductance: float
-            Streambed conductance for the Hunt99 depletion method [L/T].
+            Streambed conductance for the hunt_99_depletion depletion method [L/T].
             Defaults to None
 
         Additional Parameters Used by Hunt and Ward/Lough Solutions
@@ -195,8 +195,8 @@ class WellResponse:
         idx = deltaQ.index[0] - 1
         cQ = deltaQ.iloc[0]
         ct = list(range(idx, len(self.Q)))
-        if self.depl_method.lower() == "walton":
-            # Walton method (only) needs these goofy units of gpd/dt for T
+        if self.depl_method.lower() == "walton_depletion":
+            # walton_depletion method (only) needs these goofy units of gpd/dt for T
             T = self.T_gpd_ft
         else:
             T = self.T
@@ -252,8 +252,8 @@ class Well:
         stream_dist=None,
         drawdown_dist=None,
         stream_apportionment=None,
-        depl_method="walton",
-        drawdown_method="theis",
+        depl_method="walton_depletion",
+        drawdown_method="theis_drawdown",
         streambed_conductance=None,
         Bprime=None,
         Bdouble=None,
@@ -298,14 +298,14 @@ class Well:
                 Dictionary with stream responses and fraction of depletion
                 attributed to each. Defaults to None.
         depl_method: string, optional
-            Method to be used for depletion calculations. Defaults to 'Glover'.
+            Method to be used for depletion calculations. Defaults to 'glover_depletion'.
         drawdown_method: string, optional
-            Method to be used for drawdown calculations. Defaults to 'Theis'.
-            Only 'theis' is available right now in the Well() class, if
+            Method to be used for drawdown calculations. Defaults to 'theis_drawdown'.
+            Only 'theis_drawdown' is available right now in the Well() class, if
             Hunt (1999) or Ward and Lough (2014) are desired, the function
             must be called directly
         streambed_conductance: float
-            Streambed conductance for the Hunt99 depletion method [L/T].
+            Streambed conductance for the hunt_99_depletion depletion method [L/T].
             Defaults to None
 
         Additional Parameters Used by Hunt and Ward/Lough Solutions
@@ -381,8 +381,10 @@ class Well:
         # make sure stream names consistent
         # between dist and apportionment
 
-        if self.drawdown_method.lower() != "theis":
-            print("Theis must be used as drawdown method in Well Class.")
+        if self.drawdown_method.lower() != "theis_drawdown":
+            print(
+                "'theis_drawdown' must be used as drawdown method in Well Class."
+            )
             sys.exit()
         if stream_dist is not None and stream_apportionment is not None:
             assert (

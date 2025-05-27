@@ -2,7 +2,7 @@ project_properties:
   name: TestDynamicHuntSolution
   T: 1002.24
   S: 0.1
-  depl_method: hunt99
+  depl_method: hunt_99_depletion
   default_dd_days: 90
   default_depletion_years: 5
   default_pumping_days: 90

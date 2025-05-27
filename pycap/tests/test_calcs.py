@@ -314,7 +314,7 @@ def test_theis(theis_results):
 
     time = pars["time"]
     dd = [
-        pycap.theis(pars["T"], pars["S"], time, dist, currQ)
+        pycap.theis_drawdown(pars["T"], pars["S"], time, dist, currQ)
         for currQ in pars["Q"]
     ]
     assert np.allclose(dd[0], theis_results["theis_res"].well1_dd, atol=0.5)
@@ -332,7 +332,7 @@ def test_distance():
     #  ([2,3],[9,32.9]), 30.70846788753877)
 
 
-def test_glover():
+def test_glover_depletion():
     """Test for the glover calculations
     against the Glover & Balmer (1954) paper
     """
@@ -343,7 +343,7 @@ def test_glover():
     D = 100  # thickness in feet
     T = K * D * 24 * 60 * 60  # converting to ft/day
     S = 0.2
-    Qs = pycap.glover(T, S, time, dist, Q)
+    Qs = pycap.glover_depletion(T, S, time, dist, Q)
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
@@ -368,7 +368,7 @@ def test_sdf():
 #                    )
 
 
-def test_walton(walton_results):
+def test_walton_depletion(walton_results):
     """Test of a single year to be sure the Walton calculations are made correctly
 
     Args:
@@ -380,14 +380,14 @@ def test_walton(walton_results):
     dep = {}
     rch = {}
     for idx in [0, 1]:
-        dep[idx] = pycap.walton(
+        dep[idx] = pycap.walton_depletion(
             pars["T_gpd_ft"][idx],
             pars["S"][idx],
             res.t_well,
             pars["dist"][idx],
             pars["Q"][idx],
         )
-        rch[idx] = pycap.walton(
+        rch[idx] = pycap.walton_depletion(
             pars["T_gpd_ft"][idx],
             pars["S"][idx],
             res.t_image,
@@ -528,8 +528,8 @@ def test_run_yml_example():
     ap.write_responses_csv()
 
 
-def test_hunt99_results():
-    """Test of _hunt99() function in the
+def test_hunt_99_depletion_results():
+    """Test of hunt_99_depletion() function in the
     well.py module.  Compares computedstream depletion
     to results from Jenkins (1968) Table 1 and the
     strmdepl08 appendix.
@@ -545,7 +545,9 @@ def test_hunt99_results():
         10000.0  # large lambda value should return Glover and Balmer solution
     )
     # see test_glover for these values.
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
+    Qs = pycap.hunt_99_depletion(
+        T, S, time, dist, Q, streambed_conductance=rlambda
+    )
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
@@ -555,7 +557,9 @@ def test_hunt99_results():
     sdf = dist**2 * S / T
     time = [sdf * 1.0, sdf * 2.0, sdf * 6.0]
     obs = [0.480, 0.617, 0.773]
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
+    Qs = pycap.hunt_99_depletion(
+        T, S, time, dist, Q, streambed_conductance=rlambda
+    )
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
@@ -569,7 +573,9 @@ def test_hunt99_results():
     time = [10.0, 20.0, 28.0]
     rlambda = 20
     obs = np.array([0.1055, 0.1942, 0.2378]) / 0.5570
-    Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
+    Qs = pycap.hunt_99_depletion(
+        T, S, time, dist, Q, streambed_conductance=rlambda
+    )
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
@@ -659,7 +665,7 @@ def test_WellClass(SIR2009_5003_Table2_Batch_results):
         S=S,
         Q=Q,
         depletion_years=5,
-        depl_method="hunt99",
+        depl_method="hunt_99_depletion",
         streambed_conductance=cond,
         stream_dist=distances,
         stream_apportionment=apportion,
@@ -710,8 +716,8 @@ def test_hunt_continuous():
     )
 
 
-def test_hunt99ddwn():
-    """Test of _hunt99ddwn() function in the
+def test_hunt_99_drawdown():
+    """Test of hunt_99_drawdown() function in the
     well.py module.
     """
     Q = 1
@@ -725,10 +731,10 @@ def test_hunt99ddwn():
     x = 50.0
     y = 0.0
 
-    ddwn = pycap.hunt99ddwn(
+    ddwn = pycap.hunt_99_drawdown(
         T, S, time, dist, Q, streambed_conductance=rlambda, x=x, y=y
     )
-    no_stream = pycap.theis(T, S, time, (dist - x), Q)
+    no_stream = pycap.theis_drawdown(T, S, time, (dist - x), Q)
     assert ddwn == no_stream
 
 
@@ -756,13 +762,13 @@ def test_ward_lough_depletion(ward_lough_test_data):
     dQ1_test = ward_lough_test_data["dQ1_test"]
     dQ2_test = ward_lough_test_data["dQ2_test"]
     allpars["t"] = dQ2_test.index * 100
-    dQ2_test["mod"] = pycap.WardLoughDepletion(**allpars)
+    dQ2_test["mod"] = pycap.ward_lough_depletion(**allpars)
     allpars["t"] = dQ1_test.index * 100
     allpars["T1"] = 0.01
     allpars.pop("x")
     allpars.pop("y")
     allpars["aquitard_K"] = 0.001
-    dQ1_test["mod"] = pycap.WardLoughDepletion(**allpars)
+    dQ1_test["mod"] = pycap.ward_lough_depletion(**allpars)
     assert np.allclose(
         dQ1_test["mod"] / allpars["Q"], dQ1_test["dQ"], atol=0.1
     )
@@ -779,9 +785,9 @@ def test_ward_lough_drawdown(ward_lough_test_data):
     s1_test = ward_lough_test_data["s1_test"]
     s2_test = ward_lough_test_data["s2_test"]
     allpars["t"] = s1_test.index * 100
-    s1_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 0]
+    s1_test["mod"] = pycap.ward_lough_drawdown(**allpars)[:, 0]
     allpars["t"] = s2_test.index * 100
-    s2_test["mod"] = pycap.WardLoughDrawdown(**allpars)[:, 1]
+    s2_test["mod"] = pycap.ward_lough_drawdown(**allpars)[:, 1]
     assert np.allclose(
         s1_test["mod"] * allpars["T2"] / allpars["Q"], s1_test["s"], atol=0.035
     )
@@ -792,14 +798,14 @@ def test_ward_lough_drawdown(ward_lough_test_data):
 
 def test_complex_well(ward_lough_test_data):
     import pycap
-    from pycap import WardLoughDepletion
+    from pycap import ward_lough_depletion
     from pycap.wells import Well
 
     # get the test parameters
     allpars = ward_lough_test_data["params"]
     # now run the base solutions for comparisons
     allpars["t"] = list(range(365))
-    dep1 = WardLoughDepletion(**allpars)
+    dep1 = ward_lough_depletion(**allpars)
 
     # now configure for running through Well object
     allpars["T"] = allpars["T1"]
@@ -816,7 +822,7 @@ def test_complex_well(ward_lough_test_data):
 
     w = Well(
         "newwell",
-        depl_method="wardlough",
+        depl_method="ward_lough_depletion",
         **allpars,
     )
     # athens test - just making sure it runs

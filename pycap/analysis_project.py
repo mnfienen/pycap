@@ -144,7 +144,9 @@ class Project:
         self.existing_well_categories = ["existing", "active", "new_approved"]
         self.existing_wells = []
         self.proposed_wells = []
-        self.depl_method = "Walton"  # default, can specify in the yml file
+        self.depl_method = (
+            "walton_depletion"  # default, can specify in the yml file
+        )
         self.ts_len = np.inf
         self.__dd_responses = None
         self.__stream_responses = None
