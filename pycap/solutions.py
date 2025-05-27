@@ -279,7 +279,7 @@ def _ddwn1(dist, x, y, T, streambed, time, S):
     return sps.exp1(u1)
 
 
-def _ddwn2(theta, l, x, y, T, streambed, time, S):
+def _ddwn2(theta, dist, x, y, T, streambed, time, S):
     """Internal method to calculate function that gets integrated
         in the Hunt (1999) solution
 
@@ -289,7 +289,7 @@ def _ddwn2(theta, l, x, y, T, streambed, time, S):
     """
     if streambed == 0.0:
         return 0.0
-    u2 = ((l + np.abs(x) + 2 * T * theta / streambed) ** 2 + y**2) / (
+    u2 = ((dist + np.abs(x) + 2 * T * theta / streambed) ** 2 + y**2) / (
         4.0 * T * time / S
     )
     return np.exp(-theta) * sps.exp1(u2)
@@ -773,7 +773,7 @@ def hunt2003(
     t2 = np.exp(b - c**2)
     depl = sps.erfc(a) - (t1 * t2)
 
-    ## corrected depletion for storage of upper semiconfining unit
+    # corrected depletion for storage of upper semiconfining unit
     return Q * (depl - correction)
 
 

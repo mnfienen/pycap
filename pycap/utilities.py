@@ -3,8 +3,6 @@ import calendar
 import numpy as np
 import pandas as pd
 
-from pycap.solutions import GPM2CFD
-
 
 def Q2ts(depl_pump_time, depletion_years, Q_scalar):
     """Function to convert a scalar Q to a time series

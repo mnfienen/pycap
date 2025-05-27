@@ -16,7 +16,7 @@ for nb in nbs:
     )
     proc = subprocess.run(cmd)
     assert proc.returncode == 0, f"Error running command: {' '.join(cmd)}"
-    
+
     print("running fresh", nb)
     cmd = (
         "jupyter",
@@ -27,4 +27,3 @@ for nb in nbs:
     )
     proc = subprocess.run(cmd)
     assert proc.returncode == 0, f"Error running command: {' '.join(cmd)}"
-

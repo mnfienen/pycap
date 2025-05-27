@@ -5,12 +5,11 @@ import pandas as pd
 import pytest
 
 import pycap
-from pycap.utilities import Q2ts
+from pycap.utilities import Q2ts, create_timeseries_template
 
 # homepath = Path(getcwd())
 # datapath = homepath / 'tests' / 'data'
 datapath = Path("pycap/tests/data")
-from pycap.utilities import create_timeseries_template
 
 create_timeseries_template(
     filename=datapath / "test_ts.csv",
@@ -345,7 +344,7 @@ def test_glover():
     T = K * D * 24 * 60 * 60  # converting to ft/day
     S = 0.2
     Qs = pycap.glover(T, S, time, dist, Q)
-    assert all(np.isnan(Qs) == False)
+    assert not any(np.isnan(Qs))
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
 
@@ -521,7 +520,6 @@ def test_complex_yml():
 
 
 def test_run_yml_example():
-    import pycap.analysis_project as ap
     from pycap.analysis_project import Project
 
     yml_file = "example.yml"
@@ -548,7 +546,7 @@ def test_hunt99_results():
     )
     # see test_glover for these values.
     Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
-    assert all(np.isnan(Qs) == False)
+    assert not any(np.isnan(Qs))
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
     # check some values with varying time, using t/sdf, q/Q table
@@ -558,7 +556,7 @@ def test_hunt99_results():
     time = [sdf * 1.0, sdf * 2.0, sdf * 6.0]
     obs = [0.480, 0.617, 0.773]
     Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
-    assert all(np.isnan(Qs) == False)
+    assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
     # Check with lower streambed conductance using
@@ -572,7 +570,7 @@ def test_hunt99_results():
     rlambda = 20
     obs = np.array([0.1055, 0.1942, 0.2378]) / 0.5570
     Qs = pycap.hunt99(T, S, time, dist, Q, streambed_conductance=rlambda)
-    assert all(np.isnan(Qs) == False)
+    assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
 
@@ -794,7 +792,7 @@ def test_ward_lough_drawdown(ward_lough_test_data):
 
 def test_complex_well(ward_lough_test_data):
     import pycap
-    from pycap import WardLoughDepletion, WardLoughDrawdown
+    from pycap import WardLoughDepletion
     from pycap.wells import Well
 
     # get the test parameters
