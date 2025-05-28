@@ -3,6 +3,7 @@ from .solutions import (
     ALL_DEPL_METHODS,
     CFD2GPM,
     GPM2CFD,
+    SEC2DAY,
     _calc_deltaQ,
     glover_depletion,
     hunt_03_depletion,

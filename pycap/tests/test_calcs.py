@@ -539,7 +539,7 @@ def test_hunt_99_depletion_results():
     time = 365 * 5  # paper evaluates at 5 years in days
     K = 0.001  # ft/sec
     D = 100  # thickness in feet
-    T = K * D * 24 * 60 * 60  # converting to ft/day
+    T = K * D * pycap.SEC2DAY  # converting to ft/day
     S = 0.2
     rlambda = (
         10000.0  # large lambda value should return Glover and Balmer solution
@@ -567,15 +567,19 @@ def test_hunt_99_depletion_results():
     # values from 28 days of pumping from STRMDEPL08 appendix
     # T = 1,000 ft2/d, L = 100 ft, S = 20 ft/d, d = 500 ft, S = 0.1, and Qw = 0.557 ft3/s (250 gal/min).
 
-    dist = 500.0
-    T = 1000.0
+    dist = 500.0  # feet
+    T = 0.116e-1 * pycap.SEC2DAY  # ft^2/sec to ft^2/day
     S = 0.1
-    time = [10.0, 20.0, 28.0]
-    rlambda = 20
+    Q = 0.557 * pycap.SEC2DAY  # cfs to cfd
+    time = [10.0, 20.0, 28.0]  # days
+    rlambda = 0.231e-03 * pycap.SEC2DAY  # ft/sec to ft/day
     obs = np.array([0.1055, 0.1942, 0.2378]) / 0.5570
-    Qs = pycap.hunt_99_depletion(
-        T, S, time, dist, Q, streambed_conductance=rlambda
-    )
+    Qs = (
+        pycap.hunt_99_depletion(
+            T, S, time, dist, Q, streambed_conductance=rlambda
+        )
+        / Q
+    )  # normalize results
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
