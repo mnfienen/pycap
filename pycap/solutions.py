@@ -1259,3 +1259,4 @@ ALL_DEPL_METHODS = {
 
 GPM2CFD = 60 * 24 / 7.48  # factor to convert from GPM to CFD
 CFD2GPM = 1 / GPM2CFD  # factor to convert from CFD to GPM
+SEC2DAY = 60 * 60 * 24  # factor to conver x/sec to x/day
