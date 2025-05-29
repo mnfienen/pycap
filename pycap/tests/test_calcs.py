@@ -241,6 +241,17 @@ def project_spreadsheet_results():
     }
     return params
 
+@pytest.fixture
+def hunt_03_results():
+    # read in results from STRMDEPL08 example run
+    flname = datapath / 'example03.plt'
+    strmdepl08_df = pd.read_csv(flname, sep=r'\s+')
+    strmdepl08_df.index = strmdepl08_df.index + 1  # adjust index to match python output
+    strmdepl08_df['ratio08'] = strmdepl08_df['QS']/strmdepl08_df['QWELL']
+    time = [50, 100, 200, 300]
+    checkvals = [strmdepl08_df.loc[x]['ratio08'] for x in time]
+    return {"time": time, "checkvals": checkvals}
+
 
 def test_project_spreadsheet(project_spreadsheet_results):
     import pycap
@@ -582,6 +593,46 @@ def test_hunt_99_depletion_results():
     )  # normalize results
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
+
+def test_hunt_03_depletion_results(hunt_03_results):
+    """Test of hunt_03_depletion() function in the
+    well.py module.  Compares computed stream depletion
+    to results from STRMDEPL08 Fortran code using
+    example03.dat as input and producing example03.plt
+    """
+
+    dist = 500.0
+    T = 0.0115740740740741 * 60. * 60. * 24.
+    S = 0.001
+    Qw = 0.557 * 60 * 60 * 24
+    Bprime = 20
+    Bdouble = 15
+    Kprime = 1.1574074074074073e-05 * 60. * 60. * 24.
+    sigma = 0.1
+    width = 5
+    
+    time = hunt_03_results["time"]
+    rlambda = Kprime * (width/Bdouble) 
+
+    Qs = pycap.hunt_03_depletion(T,
+                                S,
+                                time,
+                                dist,
+                                Qw,
+                                Bprime=Bprime,
+                                Bdouble=Bdouble,
+                                aquitard_K=Kprime,
+                                sigma=sigma,
+                                width=width,
+                                streambed_conductance= rlambda)
+    ratios = Qs/Qw
+
+    tol = 0.002  # relative tolerance = 0.2 percent
+    np.testing.assert_allclose(
+                                ratios,
+                                hunt_03_results["checkvals"],
+                                rtol=tol
+                            )
 
 
 @pytest.mark.xfail
