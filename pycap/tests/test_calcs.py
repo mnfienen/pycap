@@ -247,7 +247,7 @@ def hunt_03_results():
     flname = datapath / 'example03.plt'
     strmdepl08_df = pd.read_csv(flname, sep=r'\s+')
     strmdepl08_df.index = strmdepl08_df.index + 1  # adjust index to match python output
-    strmdepl08_df['ratio08'] = strmdepl08_df['QS']/strmdepl08['QWELL']
+    strmdepl08_df['ratio08'] = strmdepl08_df['QS']/strmdepl08_df['QWELL']
     time = [50, 100, 200, 300]
     checkvals = [strmdepl08_df.loc[x]['ratio08'] for x in time]
     return {"time": time, "checkvals": checkvals}
