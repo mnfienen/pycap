@@ -7,6 +7,16 @@ import scipy.integrate as integrate
 import scipy.special as sps
 from scipy.special import gammaln
 
+def _make_arrays(a):
+    """ private function to force values to
+        arrays from lists or scalars
+    """ 
+    if isinstance(a, np.ndarray):
+        return a
+    else:
+        return(np.atleast_1d(a))
+
+
 # suppress divide by zero errors
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -77,31 +87,35 @@ def theis_drawdown(T, S, time, dist, Q, **kwargs):
         drawdown values at input parameter times/distances [L]
     """
     isarray = False
-    if isinstance(time, list):
-        time = np.array(time)
-    if isinstance(dist, list):
-        dist = np.array(dist)
-    if isinstance(dist, pd.Series):
-        dist = dist.values
-
-    if isinstance(dist, np.ndarray):
-        isarray = True
-
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+    if len(dist) > 1 and len(time) > 1:
+        print("cannot have both time and distance as arrays")
+        print("in the theis_drawdown method.  Need to externally loop")
+        print("over one of the arrays and pass the other")
+        sys.exit()
+        
     # construct the well function argument
     # is dist is zero, then function does not exist
     # trap for dist==0 and set to small value
-    if isarray:
-        dist = np.where(dist == 0, 0.001, dist)
-    else:
-        if dist == 0.0:
-            dist = 0.001
-
-    # compute u and then the Theis solution
-    u = dist**2.0 * S / (4.0 * T * time)
-
-    # calculate and return
-    return (Q / (4.0 * np.pi * T)) * sps.exp1(u)
-
+    
+    # sort out geometry of solution
+    if len(dist) >= len(time):
+        if time[0] == 0:
+            return 0
+        else:
+            ddn = np.zeros_like(dist)
+            u = dist**2.0 * S / (4.0 * T * time)
+            ddn[dist!=0] = (Q / (4.0 * np.pi * T)) \
+                * sps.exp1(u[dist!=0])
+            return ddn
+    elif len(time) > len(dist):
+        ddn = np.zeros_like(time)
+        u = np.zeros_like(time)
+        u[time!=0] = dist**2.0 * S / (4.0 * T * time[time!=0])
+        ddn[time!=0] = (Q / (4.0 * np.pi * T)) \
+                * sps.exp1(u[time!=0])
+        return ddn
 
 def hunt_99_drawdown(
     T, S, time, dist, Q, streambed_conductance=None, x=None, y=None, **kwargs
@@ -172,24 +186,10 @@ def hunt_99_drawdown(
 
     # compute a single x, y point at a given time
     if timescalar and spacescalar:
-        warnings.filterwarnings(
-            "ignore", category=integrate.IntegrationWarning
-        )
-        [strmintegral, err] = integrate.quad(
-            _ddwn2,
-            0.0,
-            np.inf,
-            args=(dist, x, y, T, streambed_conductance, time, S),
-        )
-        return (Q / (4.0 * np.pi * T)) * (
-            _ddwn1(dist, x, y, T, streambed_conductance, time, S)
-            - strmintegral
-        )
-
-    # compute a vector of times for a given point
-    if not timescalar and spacescalar:
-        drawdowns = []
-        for tm in time:
+        # handle zero time 
+        if time == 0:
+            return 0
+        else:
             warnings.filterwarnings(
                 "ignore", category=integrate.IntegrationWarning
             )
@@ -197,15 +197,37 @@ def hunt_99_drawdown(
                 _ddwn2,
                 0.0,
                 np.inf,
-                args=(dist, x, y, T, streambed_conductance, tm, S),
+                args=(dist, x, y, T, streambed_conductance, time, S),
             )
-            drawdowns.append(
-                (Q / (4.0 * np.pi * T))
-                * (
-                    _ddwn1(dist, x, y, T, streambed_conductance, tm, S)
-                    - strmintegral
+            return (Q / (4.0 * np.pi * T)) * (
+                _ddwn1(dist, x, y, T, streambed_conductance, time, S)
+                - strmintegral
+            )
+
+    # compute a vector of times for a given point
+    if not timescalar and spacescalar:
+        drawdowns = []
+        for tm in time:
+            # special case for zero time
+            if tm == 0:
+                drawdowns.append(0)
+            else:
+                warnings.filterwarnings(
+                    "ignore", category=integrate.IntegrationWarning
                 )
-            )
+                [strmintegral, err] = integrate.quad(
+                    _ddwn2,
+                    0.0,
+                    np.inf,
+                    args=(dist, x, y, T, streambed_conductance, tm, S),
+                )
+                drawdowns.append(
+                    (Q / (4.0 * np.pi * T))
+                    * (
+                        _ddwn1(dist, x, y, T, streambed_conductance, tm, S)
+                        - strmintegral
+                    )
+                )
         return drawdowns
 
     # if meshgrid is passed, return an np.array with dimensions
@@ -219,35 +241,39 @@ def hunt_99_drawdown(
         for time_idx in range(0, len(time)):
             for i in range(0, numrow):
                 for j in range(0, numcol):
-                    warnings.filterwarnings(
-                        "ignore", category=integrate.IntegrationWarning
-                    )
-                    [strmintegral, err] = integrate.quad(
-                        _ddwn2,
-                        0.0,
-                        np.inf,
-                        args=(
-                            dist,
-                            x[i, j],
-                            y[i, j],
-                            T,
-                            streambed_conductance,
-                            time[time_idx],
-                            S,
-                        ),
-                    )
-                    drawdowns[time_idx, i, j] = (Q / (4.0 * np.pi * T)) * (
-                        _ddwn1(
-                            dist,
-                            x[i, j],
-                            y[i, j],
-                            T,
-                            streambed_conductance,
-                            time[time_idx],
-                            S,
+                    # special case for zero time
+                    if time[time_idx] == 0:
+                        drawdowns[time_idx, i, j] = 0
+                    else:
+                        warnings.filterwarnings(
+                            "ignore", category=integrate.IntegrationWarning
                         )
-                        - strmintegral
-                    )
+                        [strmintegral, err] = integrate.quad(
+                            _ddwn2,
+                            0.0,
+                            np.inf,
+                            args=(
+                                dist,
+                                x[i, j],
+                                y[i, j],
+                                T,
+                                streambed_conductance,
+                                time[time_idx],
+                                S,
+                            ),
+                        )
+                        drawdowns[time_idx, i, j] = (Q / (4.0 * np.pi * T)) * (
+                            _ddwn1(
+                                dist,
+                                x[i, j],
+                                y[i, j],
+                                T,
+                                streambed_conductance,
+                                time[time_idx],
+                                S,
+                            )
+                            - strmintegral
+                        )
         return drawdowns
 
 
@@ -423,31 +449,36 @@ def ward_lough_drawdown(
 
     # Inverse Fourier transform
     for ii in range(len(t)):
-        try:
-            s1[ii] = _StehfestCoeff(1, NSteh1) * _if1(
-                T1, S1, K, lambd, x, y, np.log(2) / t[ii]
-            )
-            for jj in range(2, NSteh1 + 1):
-                s1[ii] += _StehfestCoeff(jj, NSteh1) * _if1(
-                    T1, S1, K, lambd, x, y, jj * np.log(2) / t[ii]
+        # special case for zero time
+        if t[ii] == 0:
+            s1[ii] = 0
+            s2[ii] = 0
+        else:
+            try:
+                s1[ii] = _StehfestCoeff(1, NSteh1) * _if1(
+                    T1, S1, K, lambd, x, y, np.log(2) / t[ii]
                 )
-            s1[ii] *= np.log(2) / t[ii]
-        except OverflowError as e:
-            print(f"Overflow error in s1 calculation at index {ii}: {e}")
-            s1[ii] = np.nan  # Assign NaN if there's an overflow
+                for jj in range(2, NSteh1 + 1):
+                    s1[ii] += _StehfestCoeff(jj, NSteh1) * _if1(
+                        T1, S1, K, lambd, x, y, jj * np.log(2) / t[ii]
+                    )
+                s1[ii] *= np.log(2) / t[ii]
+            except OverflowError as e:
+                print(f"Overflow error in s1 calculation at index {ii}: {e}")
+                s1[ii] = np.nan  # Assign NaN if there's an overflow
 
-        try:
-            s2[ii] = _StehfestCoeff(1, NSteh2) * _if2(
-                T1, S1, K, lambd, x, y, np.log(2) / t[ii]
-            )
-            for jj in range(2, NSteh2 + 1):
-                s2[ii] += _StehfestCoeff(jj, NSteh2) * _if2(
-                    T1, S1, K, lambd, x, y, jj * np.log(2) / t[ii]
+            try:
+                s2[ii] = _StehfestCoeff(1, NSteh2) * _if2(
+                    T1, S1, K, lambd, x, y, np.log(2) / t[ii]
                 )
-            s2[ii] *= np.log(2) / t[ii]
-        except OverflowError as e:
-            print(f"Overflow error in s2 calculation at index {ii}: {e}")
-            s2[ii] = np.nan  # Assign NaN if there's an overflow
+                for jj in range(2, NSteh2 + 1):
+                    s2[ii] += _StehfestCoeff(jj, NSteh2) * _if2(
+                        T1, S1, K, lambd, x, y, jj * np.log(2) / t[ii]
+                    )
+                s2[ii] *= np.log(2) / t[ii]
+            except OverflowError as e:
+                print(f"Overflow error in s2 calculation at index {ii}: {e}")
+                s2[ii] = np.nan  # Assign NaN if there's an overflow
 
     return np.array(list(zip(s1 * Q / T2, s2 * Q / T2)))  # re-dimensionalize
 
@@ -488,7 +519,7 @@ def glover_depletion(T, S, time, dist, Q, **kwargs):
     # turn lists into np.array so they get handled correctly
     if isinstance(time, list) and isinstance(dist, list):
         print("cannot have both time and distance as arrays")
-        print("in the hunt_99_depletion method.  Need to externally loop")
+        print("in the glover_depletion method.  Need to externally loop")
         print("over one of the arrays and pass the other")
         sys.exit()
     elif isinstance(time, list):
@@ -496,8 +527,18 @@ def glover_depletion(T, S, time, dist, Q, **kwargs):
     elif isinstance(dist, list):
         dist = np.array(dist)
 
-    z = dist / np.sqrt(4 * (T / S) * time)
-    return Q * sps.erfc(z)
+    if not isinstance(time, np.ndarray):
+        if time == 0:
+            return 0
+        else:
+            return Q * sps.erfc(dist / np.sqrt(4 * (T / S) * time))
+        
+    # handle zero time condition for list-like times
+    z = np.zeros_like(time)
+    z[time!=0] = dist / np.sqrt(4 * (T / S) * time[time!=0])
+    depl = np.zeros_like(time)
+    depl[time!=0] = Q * sps.erfc(z[time!=0])
+    return depl
 
 
 def sdf(T, S, dist, **kwargs):
@@ -567,6 +608,8 @@ def walton_depletion(T, S, time, dist, Q, **kwargs):
     """
     if isinstance(time, list):
         time = np.array(time)
+    if not isinstance(time,np.ndarray):
+        time = np.array(time)
     if isinstance(time, pd.Series):
         time = time.values
     if dist > 0:
@@ -581,8 +624,12 @@ def walton_depletion(T, S, time, dist, Q, **kwargs):
         I + 1.52014e-04 * (G**4) + 2.76567e-04 * (G**5) + 4.30638e-05 * (G**6)
     ) ** 16
     ret_vals = Q * (1 / J)
+    # handle zero time condition 
     ret_vals[time == 0] = 0.0
-    return ret_vals
+    if len(ret_vals)==1:
+        return ret_vals[0]
+    else:
+        return ret_vals
 
 
 def hunt_99_depletion(
@@ -633,8 +680,10 @@ def hunt_99_depletion(
         time = np.array(time)
     elif isinstance(dist, list):
         dist = np.array(dist)
-
-    a = np.sqrt(S * dist**2 / (4.0 * T * time))
+    if not isinstance(time,np.ndarray):
+        time = np.array(time)
+    a = np.zeros_like(time)
+    a[time!=0] = np.sqrt(S * dist**2 / (4.0 * T * time[time!=0]))
     b = (streambed_conductance**2 * time) / (4 * S * T)
     c = (streambed_conductance * dist) / (2.0 * T)
     # Qs/Q = erfc(a) - exp(b+c)*erfc(sqrt(b) + a)
@@ -650,6 +699,12 @@ def hunt_99_depletion(
     t1 = sps.erfcx(y)
     t2 = np.exp(b + c - y**2)
     depl = sps.erfc(a) - (t1 * t2)
+    # handle zero time condition
+    if not isinstance(time, list) and not isinstance(time,np.ndarray):
+        if time == 0:
+            return 0
+    else:
+        depl[time==0] = 0
     return Q * depl
 
 
@@ -738,7 +793,8 @@ def hunt_03_depletion(
         time = np.array(time)
     elif isinstance(dist, list):
         dist = np.array(dist)
-
+    if not isinstance(time, np.ndarray):
+        time = np.array(time)
     # make dimensionless group used in equations
     dtime = (T * time) / (S * np.power(dist, 2))
 
@@ -757,17 +813,23 @@ def hunt_03_depletion(
     # because of storage in the semiconfining aquifer
     correction = []
     for dt in dtime:
-        warnings.filterwarnings(
-            "ignore", category=integrate.IntegrationWarning
-        )
-        [y, err] = integrate.quad(
-            _integrand, 0.0, 1.0, args=(dlam, dt, epsilon, dK), limit=500
-        )
-        correction.append(dlam * y)
+        # correcting for zero time
+        if dt == 0:
+            correction.append(0)
+        else:
+            warnings.filterwarnings(
+                "ignore", category=integrate.IntegrationWarning
+            )
+            [y, err] = integrate.quad(
+                _integrand, 0.0, 1.0, args=(dlam, dt, epsilon, dK), limit=500
+            )
+            correction.append(dlam * y)
 
     # terms for depletion, similar to Hunt (1999) but repeated
     # here so it matches the 2003 paper.
-    a = 1.0 / (2.0 * np.sqrt(dtime))
+    # note correcting for zero time 
+    a = np.zeros_like(dtime)
+    a[dtime!=0] = 1.0 / (2.0 * np.sqrt(dtime[dtime!=0]))
     b = dlam / 2.0 + (dtime * np.power(dlam, 2) / 4.0)
     c = a + (dlam * np.sqrt(dtime) / 2.0)
 
@@ -775,10 +837,15 @@ def hunt_03_depletion(
     # for erf(b)*erfc(c) term
     t1 = sps.erfcx(c)
     t2 = np.exp(b - c**2)
-    depl = sps.erfc(a) - (t1 * t2)
+    # note correcting for zero time 
+    depl = np.zeros_like(dtime)
+    depl[dtime!=0] = sps.erfc(a[dtime!=0]) - (t1 * t2)
 
     # corrected depletion for storage of upper semiconfining unit
-    return Q * (depl - correction)
+    if len(depl) == 1:
+        return depl[0]
+    else:
+        return Q * (depl - correction)
 
 
 def _F(alpha, dlam, dtime):
@@ -1054,16 +1121,23 @@ def ward_lough_depletion(
     )
 
     # Inverse Fourier transform
-    DeltaQ = _StehfestCoeff(1, NSteh1) * _if1_dQ(
-        T1, S1, K, lambd, np.log(2) / t
-    )
-    for jj in range(2, NSteh1 + 1):
-        DeltaQ += _StehfestCoeff(jj, NSteh1) * _if1_dQ(
-            T1, S1, K, lambd, jj * np.log(2) / t
+    if isinstance(t,int) or isinstance(t,float):
+        if t==0:
+            return 0
+    else:
+        if isinstance(t,list):
+            t = np.array(t)        
+        DeltaQ = np.zeros_like(t)
+        DeltaQ[t!=0] = _StehfestCoeff(1, NSteh1) * _if1_dQ(
+            T1, S1, K, lambd, np.log(2) / t[t!=0]
         )
-    DeltaQ = 2 * np.pi * lambd * DeltaQ * np.log(2) / t
+        for jj in range(2, NSteh1 + 1):
+            DeltaQ[t!=0] += _StehfestCoeff(jj, NSteh1) * _if1_dQ(
+                T1, S1, K, lambd, jj * np.log(2) / t[t!=0]
+            )
+        DeltaQ[t!=0] = 2 * np.pi * lambd * DeltaQ[t!=0] * np.log(2) / t[t!=0]
 
-    return DeltaQ * Q  # convert back to CFS from CFD
+        return DeltaQ * Q  # redimentionalize
 
 
 def _if1_dQ(T1, S1, K, lambda_, p):
