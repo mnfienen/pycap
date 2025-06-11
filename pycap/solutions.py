@@ -7,14 +7,28 @@ import scipy.integrate as integrate
 import scipy.special as sps
 from scipy.special import gammaln
 
+from pycap.pycap_exceptions import PycapException
+
+
+def _time_dist_error(funcname):
+    """Function for trying to call both time and distance
+    as arrays in a function
+    """
+    raise PycapException(
+        "cannot have both time and distance as arrays\n"
+        + f"in the {funcname} method.  Need to externally loop\n"
+        + "over one of the arrays and pass the other"
+    )
+
+
 def _make_arrays(a):
-    """ private function to force values to
-        arrays from lists or scalars
-    """ 
+    """private function to force values to
+    arrays from lists or scalars
+    """
     if isinstance(a, np.ndarray):
         return a
     else:
-        return(np.atleast_1d(a))
+        return np.atleast_1d(a)
 
 
 # suppress divide by zero errors
@@ -49,11 +63,12 @@ def _check_nones(all_vars, var_dict):
         if (k in var_dict[fxn_name]) & (v is None)
     }
     if len(nonevars) > 0:
-        print(f"The function: {fxn_name} requires the following")
-        print("additional arguments which were missing")
-        print("in the function call:")
-        print(", ".join(nonevars.keys()))
-        sys.exit()
+        raise PycapException(
+            f"The function: {fxn_name} requires the following\n"
+            + "additional arguments which were missing\n"
+            + "in the function call:\n"
+            + ", ".join(nonevars.keys())
+        )
 
 
 # define drawdown methods here
@@ -86,19 +101,16 @@ def theis_drawdown(T, S, time, dist, Q, **kwargs):
     drawdown: float or array of floats
         drawdown values at input parameter times/distances [L]
     """
-    isarray = False
+
     time = _make_arrays(time)
     dist = _make_arrays(dist)
     if len(dist) > 1 and len(time) > 1:
-        print("cannot have both time and distance as arrays")
-        print("in the theis_drawdown method.  Need to externally loop")
-        print("over one of the arrays and pass the other")
-        sys.exit()
-        
+        _time_dist_error("theis_drawdown")
+
     # construct the well function argument
     # is dist is zero, then function does not exist
     # trap for dist==0 and set to small value
-    
+
     # sort out geometry of solution
     if len(dist) >= len(time):
         if time[0] == 0:
@@ -106,16 +118,15 @@ def theis_drawdown(T, S, time, dist, Q, **kwargs):
         else:
             ddn = np.zeros_like(dist)
             u = dist**2.0 * S / (4.0 * T * time)
-            ddn[dist!=0] = (Q / (4.0 * np.pi * T)) \
-                * sps.exp1(u[dist!=0])
+            ddn[dist != 0] = (Q / (4.0 * np.pi * T)) * sps.exp1(u[dist != 0])
             return ddn
     elif len(time) > len(dist):
         ddn = np.zeros_like(time)
         u = np.zeros_like(time)
-        u[time!=0] = dist**2.0 * S / (4.0 * T * time[time!=0])
-        ddn[time!=0] = (Q / (4.0 * np.pi * T)) \
-                * sps.exp1(u[time!=0])
+        u[time != 0] = dist**2.0 * S / (4.0 * T * time[time != 0])
+        ddn[time != 0] = (Q / (4.0 * np.pi * T)) * sps.exp1(u[time != 0])
         return ddn
+
 
 def hunt_99_drawdown(
     T, S, time, dist, Q, streambed_conductance=None, x=None, y=None, **kwargs
@@ -173,21 +184,22 @@ def hunt_99_drawdown(
 
     # turn lists into np.array so they get handled correctly,
     # check if time or space is an array
-    timescalar = True
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+
+    if len(dist) > 1:
+        PycapException(
+            "hunt_99_drawdown can only accept a single distance argument"
+        )
+
     spacescalar = True
-    if isinstance(time, list):
-        time = np.array(time)
-
-    if isinstance(time, np.ndarray):
-        timescalar = False
-
     if isinstance(x, np.ndarray):
         spacescalar = False
 
     # compute a single x, y point at a given time
-    if timescalar and spacescalar:
-        # handle zero time 
-        if time == 0:
+    if len(time) == 1 and spacescalar:
+        # handle zero time
+        if time[0] == 0:
             return 0
         else:
             warnings.filterwarnings(
@@ -205,7 +217,7 @@ def hunt_99_drawdown(
             )
 
     # compute a vector of times for a given point
-    if not timescalar and spacescalar:
+    if len(time) > 1 and spacescalar:
         drawdowns = []
         for tm in time:
             # special case for zero time
@@ -235,8 +247,6 @@ def hunt_99_drawdown(
     if not spacescalar:
         numrow = np.shape(x)[0]
         numcol = np.shape(x)[1]
-        if timescalar:
-            time = np.array([time])
         drawdowns = np.zeros(shape=(len(time), numrow, numcol))
         for time_idx in range(0, len(time)):
             for i in range(0, numrow):
@@ -408,6 +418,12 @@ def ward_lough_drawdown(
         stream width (b in paper) [L]
 
     """
+    t = _make_arrays(t)
+    dist = _make_arrays(dist)
+    if len(dist) > 1:
+        PycapException(
+            "ward_lough_drawdown can only accept a single distance argument"
+        )
     _check_nones(
         locals(),
         {
@@ -517,28 +533,31 @@ def glover_depletion(T, S, time, dist, Q, **kwargs):
 
     """
     # turn lists into np.array so they get handled correctly
-    if isinstance(time, list) and isinstance(dist, list):
-        print("cannot have both time and distance as arrays")
-        print("in the glover_depletion method.  Need to externally loop")
-        print("over one of the arrays and pass the other")
-        sys.exit()
-    elif isinstance(time, list):
-        time = np.array(time)
-    elif isinstance(dist, list):
-        dist = np.array(dist)
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+    if len(dist) > 1 and len(time) > 1:
+        _time_dist_error("theis_drawdown")
 
-    if not isinstance(time, np.ndarray):
+    if len(time) == 1 and len(dist) == 1:
         if time == 0:
             return 0
         else:
-            return Q * sps.erfc(dist / np.sqrt(4 * (T / S) * time))
-        
-    # handle zero time condition for list-like times
-    z = np.zeros_like(time)
-    z[time!=0] = dist / np.sqrt(4 * (T / S) * time[time!=0])
-    depl = np.zeros_like(time)
-    depl[time!=0] = Q * sps.erfc(z[time!=0])
-    return depl
+            return Q * sps.erfc(dist[0] / np.sqrt(4 * (T / S) * time[0]))
+
+    elif len(time) == 1 and len(dist) > 1:
+        # handle zero time condition for list-like times
+        if time[0] == 0:
+            return np.zeros_like(dist)
+        else:
+            z = dist / np.sqrt(4 * (T / S) * time)
+            return Q * sps.erfc(z)
+    elif len(time) > 1 and len(dist) == 1:
+        # handle zero time condition for list-like times
+        z = np.zeros_like(time)
+        z[time != 0] = dist / np.sqrt(4 * (T / S) * time[time != 0])
+        depl = np.zeros_like(time)
+        depl[time != 0] = Q * sps.erfc(z[time != 0])
+        return depl
 
 
 def sdf(T, S, dist, **kwargs):
@@ -606,30 +625,41 @@ def walton_depletion(T, S, time, dist, Q, **kwargs):
         depletion values at at input parameter times/distances
 
     """
-    if isinstance(time, list):
-        time = np.array(time)
-    if not isinstance(time,np.ndarray):
-        time = np.array(time)
-    if isinstance(time, pd.Series):
-        time = time.values
-    if dist > 0:
-        # avoid divide by zero for time==0
-        # time = time.values
+    # turn lists into np.array so they get handled correctly
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+    if len(dist) > 1 and len(time) > 1:
+        _time_dist_error("walton_depletion")
+
+    if len(time) == 1:
+        if time[0] == 0:
+            return 0
+        else:
+            # avoid divide by zero for time==0
+            # time = time.values
+            G = dist / np.sqrt((0.535 * time * T / S))
+    elif len(dist) == 1:
         G = np.zeros_like(time).astype(float)
         G[time != 0] = dist / np.sqrt((0.535 * time[time != 0] * T / S))
-    else:
-        G = 0
-    I = 1 + 0.0705230784 * G + 0.0422820123 * (G**2) + 9.2705272e-03 * (G**3)
-    J = (
-        I + 1.52014e-04 * (G**4) + 2.76567e-04 * (G**5) + 4.30638e-05 * (G**6)
-    ) ** 16
-    ret_vals = Q * (1 / J)
-    # handle zero time condition 
-    ret_vals[time == 0] = 0.0
-    if len(ret_vals)==1:
-        return ret_vals[0]
-    else:
-        return ret_vals
+        I = (
+            1
+            + 0.0705230784 * G
+            + 0.0422820123 * (G**2)
+            + 9.2705272e-03 * (G**3)
+        )
+        J = (
+            I
+            + 1.52014e-04 * (G**4)
+            + 2.76567e-04 * (G**5)
+            + 4.30638e-05 * (G**6)
+        ) ** 16
+        depl = Q * (1 / J)
+        # handle zero time condition
+        depl[time == 0] = 0.0
+        if len(depl) == 1:
+            return depl[0]
+        else:
+            return depl
 
 
 def hunt_99_depletion(
@@ -671,41 +701,40 @@ def hunt_99_depletion(
     """
     _check_nones(locals(), {"hunt_99_depletion": ["streambed_conductance"]})
     # turn lists into np.array so they get handled correctly
-    if isinstance(time, list) and isinstance(dist, list):
-        print("cannot have both time and distance as arrays")
-        print("in the hunt_99_depletion method.  Need to externally loop")
-        print("over one of the arrays and pass the other")
-        sys.exit()
-    elif isinstance(time, list):
-        time = np.array(time)
-    elif isinstance(dist, list):
-        dist = np.array(dist)
-    if not isinstance(time,np.ndarray):
-        time = np.array(time)
-    a = np.zeros_like(time)
-    a[time!=0] = np.sqrt(S * dist**2 / (4.0 * T * time[time!=0]))
-    b = (streambed_conductance**2 * time) / (4 * S * T)
-    c = (streambed_conductance * dist) / (2.0 * T)
-    # Qs/Q = erfc(a) - exp(b+c)*erfc(sqrt(b) + a)
-    # in order to calculate exp(x)erfc(y)
-    # as values get big. Use numpy special erfcx(),
-    # scaled complementary error function, which returns
-    # exp(y**2)erfc(y)
-    # then compute exp(x)/exp(y**2) * erfcx(y)
-    # which may be computed as exp(x - y**2) * erfcx(y)
-    # This approach gives a product that goes to zero
-    # as the exp() term gets big and erfc() goes to zero
-    y = np.sqrt(b) + a
-    t1 = sps.erfcx(y)
-    t2 = np.exp(b + c - y**2)
-    depl = sps.erfc(a) - (t1 * t2)
-    # handle zero time condition
-    if not isinstance(time, list) and not isinstance(time,np.ndarray):
-        if time == 0:
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+    if len(dist) > 1 and len(time) > 1:
+        _time_dist_error("hunt_99_depletion")
+
+    elif len(time) == 1:
+        if time[0] == 0:
             return 0
-    else:
-        depl[time==0] = 0
-    return Q * depl
+        else:
+            a = np.sqrt(S * dist**2 / (4.0 * T * time))
+            b = (streambed_conductance**2 * time) / (4 * S * T)
+            c = (streambed_conductance * dist) / (2.0 * T)
+            y = np.sqrt(b) + a
+            t1 = sps.erfcx(y)
+            t2 = np.exp(b + c - y**2)
+            depl = sps.erfc(a) - (t1 * t2)
+            if len(dist) > 1:
+                return depl * Q
+            else:
+                return depl[0] * Q
+
+    elif len(dist) == 1:
+        a = np.zeros_like(time)
+        a[time != 0] = np.sqrt(S * dist**2 / (4.0 * T * time[time != 0]))
+        b = (streambed_conductance**2 * time) / (4 * S * T)
+        c = (streambed_conductance * dist) / (2.0 * T)
+        y = np.sqrt(b) + a
+        t1 = sps.erfcx(y)
+        t2 = np.exp(b + c - y**2)
+        depl = np.zeros_like(a)
+        depl[time != 0] = sps.erfc(a[time != 0]) - (
+            t1[time != 0] * t2[time != 0]
+        )
+        return depl * Q
 
 
 def hunt_03_depletion(
@@ -827,9 +856,9 @@ def hunt_03_depletion(
 
     # terms for depletion, similar to Hunt (1999) but repeated
     # here so it matches the 2003 paper.
-    # note correcting for zero time 
+    # note correcting for zero time
     a = np.zeros_like(dtime)
-    a[dtime!=0] = 1.0 / (2.0 * np.sqrt(dtime[dtime!=0]))
+    a[dtime != 0] = 1.0 / (2.0 * np.sqrt(dtime[dtime != 0]))
     b = dlam / 2.0 + (dtime * np.power(dlam, 2) / 4.0)
     c = a + (dlam * np.sqrt(dtime) / 2.0)
 
@@ -837,9 +866,9 @@ def hunt_03_depletion(
     # for erf(b)*erfc(c) term
     t1 = sps.erfcx(c)
     t2 = np.exp(b - c**2)
-    # note correcting for zero time 
+    # note correcting for zero time
     depl = np.zeros_like(dtime)
-    depl[dtime!=0] = sps.erfc(a[dtime!=0]) - (t1 * t2)
+    depl[dtime != 0] = sps.erfc(a[dtime != 0]) - (t1 * t2)
 
     # corrected depletion for storage of upper semiconfining unit
     if len(depl) == 1:
@@ -1121,21 +1150,23 @@ def ward_lough_depletion(
     )
 
     # Inverse Fourier transform
-    if isinstance(t,int) or isinstance(t,float):
-        if t==0:
+    if isinstance(t, int) or isinstance(t, float):
+        if t == 0:
             return 0
     else:
-        if isinstance(t,list):
-            t = np.array(t)        
+        if isinstance(t, list):
+            t = np.array(t)
         DeltaQ = np.zeros_like(t)
-        DeltaQ[t!=0] = _StehfestCoeff(1, NSteh1) * _if1_dQ(
-            T1, S1, K, lambd, np.log(2) / t[t!=0]
+        DeltaQ[t != 0] = _StehfestCoeff(1, NSteh1) * _if1_dQ(
+            T1, S1, K, lambd, np.log(2) / t[t != 0]
         )
         for jj in range(2, NSteh1 + 1):
-            DeltaQ[t!=0] += _StehfestCoeff(jj, NSteh1) * _if1_dQ(
-                T1, S1, K, lambd, jj * np.log(2) / t[t!=0]
+            DeltaQ[t != 0] += _StehfestCoeff(jj, NSteh1) * _if1_dQ(
+                T1, S1, K, lambd, jj * np.log(2) / t[t != 0]
             )
-        DeltaQ[t!=0] = 2 * np.pi * lambd * DeltaQ[t!=0] * np.log(2) / t[t!=0]
+        DeltaQ[t != 0] = (
+            2 * np.pi * lambd * DeltaQ[t != 0] * np.log(2) / t[t != 0]
+        )
 
         return DeltaQ * Q  # redimentionalize
 
