@@ -1,3 +1,4 @@
+from .pycap_exceptions import PycapException
 from .solutions import (
     ALL_DD_METHODS,
     ALL_DEPL_METHODS,

@@ -241,15 +241,18 @@ def project_spreadsheet_results():
     }
     return params
 
+
 @pytest.fixture
 def hunt_03_results():
     # read in results from STRMDEPL08 example run
-    flname = datapath / 'example03.plt'
-    strmdepl08_df = pd.read_csv(flname, sep=r'\s+')
-    strmdepl08_df.index = strmdepl08_df.index + 1  # adjust index to match python output
-    strmdepl08_df['ratio08'] = strmdepl08_df['QS']/strmdepl08_df['QWELL']
+    flname = datapath / "example03.plt"
+    strmdepl08_df = pd.read_csv(flname, sep=r"\s+")
+    strmdepl08_df.index = (
+        strmdepl08_df.index + 1
+    )  # adjust index to match python output
+    strmdepl08_df["ratio08"] = strmdepl08_df["QS"] / strmdepl08_df["QWELL"]
     time = [50, 100, 200, 300]
-    checkvals = [strmdepl08_df.loc[x]['ratio08'] for x in time]
+    checkvals = [strmdepl08_df.loc[x]["ratio08"] for x in time]
     return {"time": time, "checkvals": checkvals}
 
 
@@ -559,7 +562,7 @@ def test_hunt_99_depletion_results():
     Qs = pycap.hunt_99_depletion(
         T, S, time, dist, Q, streambed_conductance=rlambda
     )
-    assert not any(np.isnan(Qs))
+    assert not np.atleast_1d(np.isnan(Qs)).any()
     assert np.allclose(Qs, [0.9365, 0.6906, 0.4259], atol=1e-3)
 
     # check some values with varying time, using t/sdf, q/Q table
@@ -594,6 +597,7 @@ def test_hunt_99_depletion_results():
     assert not any(np.isnan(Qs))
     assert np.allclose(Qs, obs, atol=5e-3)
 
+
 def test_hunt_03_depletion_results(hunt_03_results):
     """Test of hunt_03_depletion() function in the
     well.py module.  Compares computed stream depletion
@@ -602,37 +606,35 @@ def test_hunt_03_depletion_results(hunt_03_results):
     """
 
     dist = 500.0
-    T = 0.0115740740740741 * 60. * 60. * 24.
+    T = 0.0115740740740741 * 60.0 * 60.0 * 24.0
     S = 0.001
     Qw = 0.557 * 60 * 60 * 24
     Bprime = 20
     Bdouble = 15
-    Kprime = 1.1574074074074073e-05 * 60. * 60. * 24.
+    Kprime = 1.1574074074074073e-05 * 60.0 * 60.0 * 24.0
     sigma = 0.1
     width = 5
-    
-    time = hunt_03_results["time"]
-    rlambda = Kprime * (width/Bdouble) 
 
-    Qs = pycap.hunt_03_depletion(T,
-                                S,
-                                time,
-                                dist,
-                                Qw,
-                                Bprime=Bprime,
-                                Bdouble=Bdouble,
-                                aquitard_K=Kprime,
-                                sigma=sigma,
-                                width=width,
-                                streambed_conductance= rlambda)
-    ratios = Qs/Qw
+    time = hunt_03_results["time"]
+    rlambda = Kprime * (width / Bdouble)
+
+    Qs = pycap.hunt_03_depletion(
+        T,
+        S,
+        time,
+        dist,
+        Qw,
+        Bprime=Bprime,
+        Bdouble=Bdouble,
+        aquitard_K=Kprime,
+        sigma=sigma,
+        width=width,
+        streambed_conductance=rlambda,
+    )
+    ratios = Qs / Qw
 
     tol = 0.002  # relative tolerance = 0.2 percent
-    np.testing.assert_allclose(
-                                ratios,
-                                hunt_03_results["checkvals"],
-                                rtol=tol
-                            )
+    np.testing.assert_allclose(ratios, hunt_03_results["checkvals"], rtol=tol)
 
 
 @pytest.mark.xfail
@@ -849,6 +851,14 @@ def test_ward_lough_drawdown(ward_lough_test_data):
     assert np.allclose(
         s2_test["mod"] * allpars["T2"] / allpars["Q"], s2_test["s"], atol=0.035
     )
+
+
+@pytest.mark.xfail
+def test_custom_exception():
+    from pycap import theis_drawdown
+
+    # this should raise an exception
+    theis_drawdown(1, 1, [1, 2], [1, 2], 5)
 
 
 def test_complex_well(ward_lough_test_data):
