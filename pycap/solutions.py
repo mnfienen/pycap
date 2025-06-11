@@ -817,7 +817,7 @@ def hunt_03_depletion(
     dist = _make_arrays(dist)
     if len(dist) > 1 and len(time) > 1:
         _time_dist_error("hunt_03_depletion")
-        
+
     # make dimensionless group used in equations
     dtime = (T * time) / (S * np.power(dist, 2))
 
@@ -850,7 +850,7 @@ def hunt_03_depletion(
             [y, err] = integrate.quad(
                 _integrand, 0.0, 1.0, args=(dl, dt, epsilon, dK), limit=500
             )
-            correction.append(dl* y)
+            correction.append(dl * y)
 
     # terms for depletion, similar to Hunt (1999) but repeated
     # here so it matches the 2003 paper.
