@@ -813,17 +813,11 @@ def hunt_03_depletion(
         },
     )
     # turn lists into np.array so they get handled correctly
-    if isinstance(time, list) and isinstance(dist, list):
-        print("cannot have both time and distance as arrays")
-        print("in the hunt_03_depletion method.  Need to externally loop")
-        print("over one of the arrays and pass the other")
-        sys.exit()
-    elif isinstance(time, list):
-        time = np.array(time)
-    elif isinstance(dist, list):
-        dist = np.array(dist)
-    if not isinstance(time, np.ndarray):
-        time = np.array(time)
+    time = _make_arrays(time)
+    dist = _make_arrays(dist)
+    if len(dist) > 1 and len(time) > 1:
+        _time_dist_error("hunt_03_depletion")
+        
     # make dimensionless group used in equations
     dtime = (T * time) / (S * np.power(dist, 2))
 
@@ -849,10 +843,14 @@ def hunt_03_depletion(
             warnings.filterwarnings(
                 "ignore", category=integrate.IntegrationWarning
             )
+            if len(dist) == 1:
+                dl = dlam[0]
+            else:
+                dl = dlam
             [y, err] = integrate.quad(
-                _integrand, 0.0, 1.0, args=(dlam, dt, epsilon, dK), limit=500
+                _integrand, 0.0, 1.0, args=(dl, dt, epsilon, dK), limit=500
             )
-            correction.append(dlam * y)
+            correction.append(dl* y)
 
     # terms for depletion, similar to Hunt (1999) but repeated
     # here so it matches the 2003 paper.
@@ -872,7 +870,7 @@ def hunt_03_depletion(
 
     # corrected depletion for storage of upper semiconfining unit
     if len(depl) == 1:
-        return depl[0]
+        return Q * (depl[0] - correction[0])
     else:
         return Q * (depl - correction)
 
