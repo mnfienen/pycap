@@ -26,9 +26,9 @@ def _make_arrays(a):
     arrays from lists or scalars
     """
     if isinstance(a, np.ndarray):
-        return a
+        return a.astype(float)
     else:
-        return np.atleast_1d(a)
+        return np.atleast_1d(a).astype(float)
 
 
 # suppress divide by zero errors
